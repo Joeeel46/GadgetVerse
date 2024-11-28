@@ -1,0 +1,76 @@
+<%- include('../partials/admin/header') %>
+
+<div class="card-body">
+
+    <form class="searchform" method="get" action="/admin/users">
+        <div class="input-group">
+            <input type="text" class="form-control" name="search" placeholder="Search Users">
+            <button class="btn btn-light bg" type="submit"> <i class="material-icons md-search"></i></button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for(let i=0;i<data.length;i++){ %>
+                    <tr>
+                        
+                        <td><%= data[i].name %></td>
+                        <td><%= data[i].email %></td>
+                        <td><%= data[i].phone %></td>
+                        <td>
+                            <%if(data[i].isBlocked){%>
+                                <span class="badge rounded-pill alert-danger">Blocked</span>
+                            <%}else{%>
+                                <span class="badge rounded-pill alert-success">Active</span>
+                            <%}%>
+                        </td>
+                        <td>
+                            <%if(data[i].isBlocked === false){%>
+                                <button class="btn btn-danger" style="width: 80px;">
+                                    <a href="/admin/blockCustomer?id=<%=data[i]._id%>" class="text-white ">Block</a>
+                                </button>
+                            <%}else{%>
+                                <button class="btn btn-success" style="width: 80px;">
+                                    <a href="/admin/unblockCustomer?id=<%=data[i]._id%>" class="text-white">Unblock</a>
+                                </button>
+                            <%}%>
+                        </td>
+                        
+                    </tr>
+                <%}%>    
+                
+            </tbody>
+        </table> <!-- table-responsive.// -->
+    </div>
+</div> <!-- card-body end// -->
+</div> <!-- card end// -->
+<div class="pagination-area mt-15 mb-50">
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-start">
+        <%for(let i=1;i<=totalPages;i++){%>
+            <li class="page-item">
+                <a class="page-link <%= (i===currentPage) ? 'active' : '' %>" href="?page=<%=i%>"><%=i%></a>
+            </li>
+        <%}%>
+        <!-- <li class="page-item active"><a class="page-link" href="#">01</a></li>
+        <li class="page-item"><a class="page-link" href="#">02</a></li>
+        <li class="page-item"><a class="page-link" href="#">03</a></li>
+        <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+        <li class="page-item"><a class="page-link" href="#">16</a></li>
+        <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li> -->
+    </ul>
+</nav>
+</div>
+</section> <!-- content-main end// -->
+<br>
+
+<%- include('../partials/admin/footer') %>

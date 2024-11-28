@@ -1,0 +1,152 @@
+<%- include("../../views/partials/admin/header") %>
+
+  <section class="content-main">
+    <div class="content-header">
+      <div>
+        <h2 class="content-title card-title">Brands</h2>
+        <p>Add, edit or delete a brand</p>
+      </div>
+      <div>
+        <input type="text" placeholder="Search Brands" class="form-control bg-white">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <form method="post" action="/admin/addBrand" enctype="multipart/form-data">
+              <div class="mb-4">
+                <label for="brand_name" class="form-label">Brand Name</label>
+                <input type="text" name="name" placeholder="Type here" class="form-control" id="brand_name" />
+              </div>
+              <div class="mb-4">
+                <label for="brand_image" class="form-label">Brand Image</label>
+                <div class="input-upload">
+                  <img src="" alt="" id="preview" style="max-width: 100%; max-height: 150px;" />
+                  <input class="form-control border mt-2" name="image" type="file" onchange="previewImage(event)" />
+                </div>
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary" type="submit">
+                  Add Brand
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="col-md-9">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th class="text-start">Brand</th>
+                    <th class="text-center">Logo</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Block/Unblock</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% data.reverse().forEach((brand, index) => { %>
+                    <tr>
+                      <!-- Brand Name -->
+                      <td class="text-start">
+                        <%= brand.brandName %>
+                      </td>
+          
+                      <!-- Brand Logo -->
+                      <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
+                          <img src="/uploads/re-image/<%= brand.brandImage[0] %>" 
+                               alt="<%= brand.brandName %>"
+                               class="img-fluid rounded-circle"
+                               style="width: 100%; height: auto;" />
+                        </div>
+                      </td>
+          
+                      <!-- Status -->
+                      <td class="text-center">
+                        <% if (brand.isBlocked) { %>
+                          <span class="badge rounded-pill bg-danger" style="width: 70px;">Blocked</span>
+                        <% } else { %>
+                          <span class="badge rounded-pill bg-success" style="width: 70px;">Active</span>
+                        <% } %>
+                      </td>
+          
+                      <!-- Block/Unblock Button -->
+                      <td class="text-center">
+                        <% if (brand.isBlocked) { %>
+                          <a href="/admin/unblockBrand?id=<%= brand._id %>" 
+                             class="btn btn-success text-white btn-sm"
+                             style="width: 100px;">Unblock</a>
+                        <% } else { %>
+                          <a href="/admin/blockBrand?id=<%= brand._id %>" 
+                             class="btn btn-danger text-white btn-sm"
+                             style="width: 100px;">Block</a>
+                        <% } %>
+                      </td>
+          
+                      <!-- Delete Button -->
+                      <td class="text-end">
+                        <button 
+                          class="btn btn-danger text-white btn-sm" 
+                          style="width: 100px;" 
+                          onclick="confirmDelete('<%= brand._id %>')">Delete</button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination-area mt-30 mb-50">
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+          <%for(let i=1;i<=totalPages;i++){%>
+            <li class="page-item">
+              <a class="page-link <%= (i===currentPage) ? 'active' : '' %>" href="?page=<%=i%>">
+                <%=i%>
+              </a>
+            </li>
+            <%}%>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const output = document.getElementById('preview');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function confirmDelete(brandId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Redirect to the delete route
+      window.location.href = `/admin/deleteBrand?id=${brandId}`;
+    }
+  });
+}
+  </script>
+
+  <%- include("../../views/partials/admin/footer") %>

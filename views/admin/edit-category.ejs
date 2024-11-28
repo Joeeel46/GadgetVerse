@@ -1,0 +1,57 @@
+<%- include("../partials/admin/header") %>
+<section class="content-main">
+    <div class="content-header text-center">
+        <h2 class="content-title card-title">Edit Category</h2>
+        <p>Edit the details of the category below</p>
+    </div>
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <form id="editCategoryForm" method="post" action="/admin/editCategory/<%=category._id%>">
+                <!-- Hidden input for category ID -->
+                <input type="hidden" name="id" value="<%= category._id %>">
+                
+                <!-- Error and Success Messages -->
+                <div id="errorMessage" class="alert alert-danger d-none"></div>
+                <div id="successMessage" class="alert alert-success d-none"></div>
+                
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label for="product_name" class="form-label">Name</label>
+                    <input type="text" placeholder="Product Name" class="form-control" id="product_name" name="categoryname" value="<%= category.name %>" required />
+                </div>
+                
+                <!-- Description Field -->
+                <div class="mb-4">
+                    <label for="descriptionId" class="form-label">Description</label>
+                    <textarea placeholder="Description of Product Category" class="form-control" id="descriptionId" name="description" rows="4" required><%= category.description %></textarea>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <button type="submit" id="updateCategoryBtn" class="btn btn-primary">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<script>
+    document.getElementById('updateCategoryBtn').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent default form submission
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to update this category?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, update it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the form if confirmed
+                document.getElementById('editCategoryForm').submit();
+            }
+        });
+    });
+</script>
+<%- include("../partials/admin/footer") %>
