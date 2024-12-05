@@ -1,6 +1,8 @@
 const User = require("../../models/userSchema")
 const Product = require("../../models/productSchema")
 const Category = require("../../models/categorySchema")
+const Banner = require('../../models/bannerSchema')
+const Brand = require('../../models/brandSchema')
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const bcrypt = require("bcrypt")
@@ -93,6 +95,11 @@ const signup = async (req, res) => {
 
 const loadHomePage = async (req, res) => {
     try {
+        const today = new Date().toISOString()
+        const findBanner = await Banner.find({
+            startDate:{$lt:new Date(today)},
+            endDate:{$gt:new Date(today)}
+        })
         const user = req.session.user
         const categories = await Category.find({isListed:true})
         let productData = await Product.find(
@@ -100,21 +107,16 @@ const loadHomePage = async (req, res) => {
                 category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}
             }
         )
-
         productData.sort((a,b)=> new Date(b.createdOn)-new Date(a.createdOn))
-        productData = productData.slice(0,4)
-
-
-
         if(user){
             
             const userData = await User.findById({_id:user})
             console.log(userData)
-            res.render("home",{user:userData ,productData})
+            res.render("home",{user:userData ,products:productData,banner:findBanner || []})
 
         }else{
 
-            return res.render('home', {products:productData})
+            return res.render('home', {products:productData,banner:findBanner || []})
 
         }
     } catch (error) {
@@ -233,6 +235,60 @@ const login = async (req,res)=>{
     }
 }
 
+const logout = async (req, res) => {
+    try {
+  
+      req.session.user = null;
+      res.redirect('/login')
+  
+    } catch (error) {
+      console.log("Logout error", error);
+      res.redirect('/page-not-found');
+    }
+}
+
+const loadShoppingPage = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const userData = await User.findOne({ _id: user });
+        const categories = await Category.find({ isListed: true });
+        const categoryIds = categories.map((category) => category._id.toString());
+        const page = parseInt(req.query.page) || 1;
+        const limit = 9;
+        const skip = (page - 1) * limit;
+
+        const products = await Product.find({
+            isBlocked: false,
+            category: { $in: categoryIds },
+            quantity: { $gt: 0 },
+        }).populate('category').sort({ createdOn: -1 }).skip(skip).limit(limit);
+
+        const totalProducts = await Product.countDocuments({
+            isBlocked: false,
+            category: { $in: categoryIds },
+            quantity: { $gt: 0 },
+        });
+
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const brands = await Brand.find({ isBlocked: false }); 
+        const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
+
+        res.render("shop", {
+            user: userData,
+            products: products,
+            category: categoriesWithIds,  
+            brand: brands,  
+            totalProducts: totalProducts,
+            currentPage: page,  
+            totalPages: totalPages,
+        });
+    } catch (error) {
+        res.redirect("/pageNotFound");
+    }
+};
+
+
 module.exports = {
     loadHomePage,
     pageNotFound,
@@ -241,5 +297,7 @@ module.exports = {
     verifyOtp,
     resendOtp,
     loadLogin,
-    login
+    login,
+    logout,
+    loadShoppingPage
 }

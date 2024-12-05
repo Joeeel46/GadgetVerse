@@ -74,14 +74,14 @@
 <div class="pagination-area mt-30 mb-50">
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
-            <%for(let i=1;i<=totalPages;i++){%>
-                <li class="page-item">
-                    <a class="page-link <%= (i===currentPage) ? 'active' : '' %>" href="?page=<%=i%>"><%=i%></a>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
                 </li>
-            <%}%>
+            <% } %>
         </ul>
     </nav>
-</div>
+</div><br>
 <script>
 
     async function addOffer(productId) {
@@ -136,6 +136,8 @@
                             productId:productId
                         },
                         success:(response)=>{
+                            console.log(response);
+                            
                             if(response.status===true){
                                 Swal.fire('Removed!','The offer has been removed','success')
                                 location.reload()

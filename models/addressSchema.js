@@ -20,6 +20,10 @@ const addressSchema = new Schema({
             type: String,
             required: true
         },
+        streetAddress: {
+            type: String,
+            required: true
+        },
         landMark: {
             type: String,
             required: true
@@ -45,7 +49,7 @@ const addressSchema = new Schema({
 
 
 
-const Address = mongoose.model("Address".addressSchema)
+const Address = mongoose.model("Address",addressSchema)
 
 
 module.exports = Address

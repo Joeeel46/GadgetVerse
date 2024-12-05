@@ -1,0 +1,182 @@
+<%- include('../partials/user/header') %>
+
+<head>
+    <!-- Include SweetAlert CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<section class="pt-150 pb-150">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 m-auto">
+                <div class="address_wrap widget-taber-content p-30 background-white border-radius-5">
+                    <div class="padding_eight_all bg-white">
+                        <div class="heading_s1">
+                            <h3 class="mb-30">Edit Address</h3>
+                        </div>
+
+                        <form id="addressForm">
+                            <input type="hidden" name="addressId" value="<%= address._id %>">
+                            <div class="form-group">
+                                <label for="addressType">Address Type</label>
+                                <select id="addressType" name="addressType" class="form-control">
+                                    <option value="Home">Home</option>
+                                    <option value="Office">Office</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span id="addressTypeErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" value="<%=address.name%>">
+                                <span id="nameErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state" class="form-control" placeholder="Enter your state" value="<%=address.state%>">
+                                <span id="stateErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" class="form-control" placeholder="Enter your city" value="<%=address.city%>">
+                                <span id="cityErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="streetAddress">Landmark</label>
+                                <input type="text" id="landMark" name="landMark" class="form-control" placeholder="Enter your landmark" value="<%=address.landMark%>">
+                                <span id="streetAddressErr" style="color:red;"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="streetAddress">Street Address</label>
+                                <input type="text" id="streetAddress" name="streetAddress" class="form-control" placeholder="Enter your street address" value="<%=address.streetAddress%>">
+                                <span id="streetAddressErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pincode">Pincode</label>
+                                <input type="text" id="pincode" name="pincode" class="form-control" placeholder="Enter your pincode" value="<%=address.pincode%>">
+                                <span id="pincodeErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" id="phone" name="phone" class="form-control" placeholder="Enter your phone number" value="<%=address.phone%>">
+                                <span id="phoneErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="altPhone">Alternate Phone</label>
+                                <input type="text" id="altPhone" name="altPhone" class="form-control" placeholder="Enter your alternate phone number" value="<%=address.altPhone%>">
+                                <span id="altPhoneErr" style="color:red;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-fill-out btn-block hover-up">Save Address</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/user/footer') %>
+
+<script>
+    $('#addressForm').submit(function (event) {
+        event.preventDefault();
+
+        if (!validateAddressForm()) {
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/editAddress',
+            data: $(this).serialize(),
+            success: function (response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: response.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/userProfile';
+                });
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'There was an error saving the address.',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        });
+    });
+
+    function validateAddressForm(event) {
+        // Clear previous error messages
+        document.getElementById('addressTypeErr').innerText = '';
+        document.getElementById('nameErr').innerText = '';
+        document.getElementById('cityErr').innerText = '';
+        document.getElementById('streetAddressErr').innerText = '';
+        document.getElementById('stateErr').innerText = '';
+        document.getElementById('pincodeErr').innerText = '';
+        document.getElementById('phoneErr').innerText = '';
+        document.getElementById('altPhoneErr').innerText = '';
+
+        let isValid = true;
+
+        const name = document.getElementById('name').value;
+        if (name.trim() === '') {
+            document.getElementById('nameErr').innerText = 'Name is required.';
+            isValid = false;
+        }
+
+        const city = document.getElementById('city').value;
+        if (city.trim() === '') {
+            document.getElementById('cityErr').innerText = 'City is required.';
+            isValid = false;
+        }
+
+        const streetAddress = document.getElementById('streetAddress').value;
+        if (streetAddress.trim() === '') {
+            document.getElementById('streetAddressErr').innerText = 'Street address is required.';
+            isValid = false;
+        }
+
+        const state = document.getElementById('state').value;
+        if (state.trim() === '') {
+            document.getElementById('stateErr').innerText = 'State is required.';
+            isValid = false;
+        }
+
+        const pincode = document.getElementById('pincode').value;
+        if (pincode.trim() === '' || pincode.toString().length !== 6) {
+            document.getElementById('pincodeErr').innerText = 'Pincode must be 6 digits.';
+            isValid = false;
+        }
+
+        const phone = document.getElementById('phone').value;
+        if (phone.trim() === '' || phone.length < 10) {
+            document.getElementById('phoneErr').innerText = 'Phone number must be at least 10 digits.';
+            isValid = false;
+        }
+
+        const altPhone = document.getElementById('altPhone').value;
+        if (altPhone !== '' && altPhone.length < 10) {
+            document.getElementById('altPhoneErr').innerText = 'Alternate phone number must be at least 10 digits.';
+            isValid = false;
+        }
+
+        return isValid;
+    }
+</script>

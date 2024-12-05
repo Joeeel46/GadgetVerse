@@ -88,9 +88,12 @@ const getAllProducts = async (req,res)=>{
 
             ],
         }).limit(limit*1)
-        .skip((page-1)*limit)
-        .populate('category')
+        .skip((page-1)*limit).populate('category','name')
+        
         .exec()
+
+        console.log(productData);
+        
 
         const count = await Product.find({
             $or:[
@@ -127,6 +130,8 @@ const addProductOffer = async(req,res)=>{
         console.log(percentage)
         const findProduct = await Product.findOne({_id:productId})
         const findCategory = await Category.findOne({_id:findProduct.category})
+        console.log('try');
+        
         if(findCategory.categoryOffer > percentage){
             return res.json({status:false,message:"The products category already has a category offer"})
         }
@@ -136,6 +141,8 @@ const addProductOffer = async(req,res)=>{
         await findProduct.save()
         findCategory.categoryOffer=0
         await findCategory.save()
+        console.log('working');
+        
         res.json({status:true})
 
 
