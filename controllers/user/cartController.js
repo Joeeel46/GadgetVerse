@@ -16,8 +16,7 @@ const getCart = async (req,res)=>{
             }else{
                 const totalAmount = cart.items.reduce((sum,item)=> sum + item.totalPrice,0)
                 res.render('cart',{cart:cart,products:cart.items,totalAmount})
-            }
-            
+            }////
         }
         
     } catch (error) {
@@ -29,7 +28,7 @@ const saveToCart = async (req,res)=>{
     try {
         if(req.session.user){
             const userId = req.session.user._id
-            
+
         }
     } catch (error) {
         
