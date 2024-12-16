@@ -1,4 +1,4 @@
-const mongoose = requie("mongoose")
+const mongoose = require("mongoose")
 const {Schema} = mongoose
 
 const WishlistSchema = new Schema({
@@ -10,6 +10,7 @@ const WishlistSchema = new Schema({
     products:[{
         productId:{
             type: Schema.Types.ObjectId,
+            ref:"Product",
             required: true
         },
         addedOn: {

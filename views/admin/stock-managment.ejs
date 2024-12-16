@@ -1,0 +1,178 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                <h2 class="content-title">Stock Management</h2>
+                
+                <div class="search-wrapper d-flex align-items-center">
+                    <input 
+                        type="text" 
+                        placeholder="Search product name" 
+                        class="form-control form-control-sm me-2" 
+                        style="max-width: 250px;"
+                    >
+                    <button class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-3 col-sm-6">
+                            <select class="form-select form-select-sm">
+                                <option value="All">All Categories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Home">Home</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center d-none d-md-table-cell">#ID</th>
+                                    <th>Product</th>
+                                    <th class="text-center d-none d-md-table-cell">Image</th>
+                                    <th class="d-none d-md-table-cell">Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for(let i=0; i < data.length; i++) { %>
+                                    <tr>
+                                        <td class="text-center d-none d-md-table-cell">
+                                            <%=data[i]._id%>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img 
+                                                    src="/uploads/re-image/<%=data[i].productImage[0]%>" 
+                                                    alt="<%=data[i].productName%>" 
+                                                    class="img-fluid d-md-none me-2" 
+                                                    style="max-width: 50px;"
+                                                >
+                                                <span><%=data[i].productName%></span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center d-none d-md-table-cell">
+                                            <img 
+                                                src="/uploads/re-image/<%=data[i].productImage[0]%>" 
+                                                alt="<%=data[i].productName%>" 
+                                                class="img-fluid" 
+                                                style="max-width: 80px;"
+                                            >
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <%=data[i].category.name%>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">
+                                                <%=data[i].quantity%>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    value="<%= data[i].quantity %>"
+                                                    id="stock-<%= data[i]._id %>" 
+                                                    class="form-control form-control-sm me-2" 
+                                                    style="max-width: 80px;"
+                                                >
+                                                <button 
+                                                    class="btn btn-primary btn-sm"
+                                                    onclick="updateStock('<%= data[i]._id %>')"
+                                                >
+                                                    Update
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pagination-area mt-4">
+                <nav aria-label="Product page navigation">
+                    <ul class="pagination justify-content-center">
+                        <% for (let i=1; i <=totalPages; i++) { %>
+                            <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function updateStock(productId) {
+        const newStock = document.getElementById(`stock-${productId}`).value;
+
+        fetch(`/admin/updateStock`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId, newStock })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Stock Updated',
+                    text: 'The stock has been updated successfully!',
+                    toast: true,
+                    position: "top-end",
+                    timer: 2000,
+                    timerProgressBar: true,
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: 'Failed to update stock. Please try again.',
+                    toast: true,
+                    position: "top-end",
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error updating stock:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'An Error Occurred',
+                text: 'There was a problem updating the stock. Please try again.',
+                toast: true,
+                position: "top-end",
+                timer: 2000,
+                timerProgressBar: true,
+            });
+        });
+    }
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

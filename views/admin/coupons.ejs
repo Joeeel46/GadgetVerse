@@ -1,0 +1,305 @@
+<%- include('../partials/admin/header') %>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Coupons</h2>
+                <p>Add, edit, or delete a coupon</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <form id="couponForm">
+                            <div class="mb-4">
+                                <label for="couponCode" class="form-label">Coupon Code</label>
+                                <input type="text" placeholder="Type here" class="form-control" id="couponCode" name="couponCode" />
+                                <small id="codeError" style="color: red; display: none;">Code is required</small>
+                            </div>
+                    
+                            <div class="mb-4">
+                                <label class="form-label">Discount Percentage (%)</label>
+                                <input type="number" placeholder="Enter discount percentage" class="form-control"
+                                    id="discountPercentage" name="discountPercentage" />
+                                <small id="discountError" style="color: red; display: none;">Discount percentage must be
+                                    between 1 and 100</small>
+                            </div>
+                    
+                            <div class="mb-4">
+                                <label class="form-label">Minimum Price</label>
+                                <input type="number" placeholder="Enter minimum price" class="form-control"
+                                    id="minimumPrice" name="minimumPrice" />
+                                <small id="minimumError" style="color: red; display: none;">Minimum price can't be empty</small>
+                            </div>
+                    
+                            <div class="mb-4">
+                                <label class="form-label">Created On</label>
+                                <input type="date" class="form-control" id="createdDate" name="createdOn" />
+                                <small id="createdError" style="color: red; display: none;">Created date is required</small>
+                            </div>
+                    
+                            <div class="mb-4">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="expireOn" />
+                                <small id="endDateError" style="color: red; display: none;">End date is required</small>
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-primary" type="button" id="createCouponBtn">Create Coupon</button>
+                            </div>
+                        </form>
+                    </div>                    
+                    <div class="col-md-9">
+                        <div>
+                            <%if(coupons.length>0){%>
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Coupon Code</th>
+                                            <th>Discount Percentage</th>
+                                            <!-- <th>Status</th> -->
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <%for(let i=0;i<coupons.length;i++){%>
+                                            <tr>
+                                                <td>
+                                                    <%=coupons[i].name%>
+                                                </td>
+                                                <td>
+                                                    <%=coupons[i].offerPercentage%>
+                                                </td>
+                                                <!-- <%if(coupons[i].isList){%>
+                                                <td>
+                                                    <span class="badge rounded-pill alert-success">Active</span>
+                                                </td>
+                                            <%}else{%>
+                                                <td>
+                                                    <span class="badge rounded-pill alert-danger">Inactive</span>
+                                                </td>
+                                            <%}%> -->
+                                                  <td>
+                                                    <button class="btn btn-danger text-white"
+                                                        onclick="confirmDelete('<%= coupons[i]._id %>')">Delete</button>
+                                                </td>
+                                            </tr>
+                                            <%}%>
+                                    </tbody>
+                                </table>
+                                <%}else{%>
+                                    <h3>No coupons added yet.</h3>
+                                    <%}%>
+                        </div>
+                        <div class="pagination-area mt-15 mb-50 container">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-start">
+                                    <!-- Page Numbers -->
+                                    <% 
+                                    let startPage = Math.max(1, currentPage - 2);
+                                    let endPage = Math.min(totalPages, startPage + 4);
+                                    
+                                    if (endPage - startPage < 4) {
+                                        startPage = Math.max(1, endPage - 4);
+                                    }
+                                    
+                                    if (startPage > 1) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">1</a>
+                                        </li>
+                                        <% if (startPage > 2) { %>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        <% } %>
+                                    <% } %>
+                    
+                                    <% for(let i = startPage; i <= endPage; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                    
+                                    <% if (endPage < totalPages) { %>
+                                        <% if (endPage < totalPages - 1) { %>
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        <% } %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a>
+                                        </li>
+                                    <% } %>
+                    
+                                    <!-- Next Button -->
+                                    
+                                </ul>
+                            </nav>
+                        </div><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> 
+    <br>
+
+    <script>
+
+        document.getElementById('createCouponBtn').addEventListener('click', async function (e) {
+        e.preventDefault();
+
+        // Collect form data
+        const couponData = {
+            couponCode: document.getElementById('couponCode').value,
+            discountPercentage: document.getElementById('discountPercentage').value,
+            minimumPrice: document.getElementById('minimumPrice').value,
+            createdOn: document.getElementById('createdDate').value,
+            expireOn: document.getElementById('endDate').value,
+        };
+
+        try {
+            const response = await fetch('/admin/save-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(couponData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // SweetAlert for success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message,
+                    confirmButtonText: 'OK',
+                }).then(() => {
+                    // Optional: Reload the page or perform another action
+                    window.location.reload()
+                });
+            } else {
+                // SweetAlert for error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: result.message || 'Something went wrong. Please try again.',
+                    confirmButtonText: 'OK',
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // SweetAlert for unexpected error
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Unable to process your request. Please try again later.',
+                confirmButtonText: 'OK',
+            });
+        }
+    });
+    async function confirmDelete(couponId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This action will delete the coupon permanently.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => { // Add async here because we use await inside
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/admin/delete-coupon?id=${couponId}` );
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // SweetAlert for success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message,
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        // Optional: Reload the page or perform another action
+                        window.location.reload()
+                    });
+                } else {
+                    // SweetAlert for error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: result.message || 'Something went wrong. Please try again.',
+                        confirmButtonText: 'OK',
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // SweetAlert for unexpected error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Unable to process your request. Please try again later.',
+                    confirmButtonText: 'OK',
+                });
+            }
+        }
+    });
+}
+
+        function validateCouponForm() {
+            let isValid = true;
+
+            const couponCode = document.getElementById("couponCode");
+            // const discountPrice = document.getElementById("discountPrice");
+            const discountPercentage = document.getElementById("discountPercentage");
+            const minimumPrice = document.getElementById("minimumPrice");
+            const createdDate = document.getElementById("createdDate");
+            const endDate = document.getElementById("endDate");
+
+            document.getElementById("codeError").style.display = "none";
+            document.getElementById("discountError").style.display = "none";
+            document.getElementById("minimumError").style.display = "none";
+            document.getElementById("createdError").style.display = "none";
+            document.getElementById("endDateError").style.display = "none";
+
+            if (!couponCode.value.trim()) {
+                document.getElementById("codeError").style.display = "block";
+                isValid = false;
+            }
+
+            // if (!discountPrice.value.trim() || discountPrice.value <= 0) {
+            //     document.getElementById("discountError").style.display = "block";
+            //     isValid = false;
+            // }
+
+            const discountValue = parseInt(discountPercentage.value, 10);
+            if (!discountPercentage.value.trim() || discountValue < 1 || discountValue > 100) {
+                document.getElementById("discountError").style.display = "block";
+                isValid = false;
+            }
+
+            if (!minimumPrice.value.trim() || minimumPrice.value <= 0) {
+                document.getElementById("minimumError").style.display = "block";
+                isValid = false;
+            }
+
+            if (!createdDate.value) {
+                document.getElementById("createdError").style.display = "block";
+                isValid = false;
+            }
+
+            if (!endDate.value) {
+                document.getElementById("endDateError").style.display = "block";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        document.getElementById("createdDate").value = new Date().toISOString().split("T")[0];
+    </script>
+
+
+    <%- include('../partials/admin/footer') %> 

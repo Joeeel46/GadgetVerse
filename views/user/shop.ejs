@@ -1,4 +1,62 @@
 <%- include("../../views/partials/user/header") %>
+
+<style>
+    /* Mobile Search Styling */
+    .mobile-search {
+        margin-top: 40px;
+        max-width: 100%;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    #searchForm {
+        width: 50%; /* Reduced size */
+        margin: 0 auto; /* Centers the form */
+    }
+
+    #searchInput {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 30px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    #searchInput:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    }
+
+    /* Position the search icon inside the input field */
+    .fi-rs-search {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        font-size: 18px;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        #searchForm {
+            width: 70%; /* Slightly larger on smaller screens */
+        }
+
+        #searchInput {
+            font-size: 16px;
+            padding: 10px 30px 10px 10px;
+        }
+
+        .fi-rs-search {
+            font-size: 16px;
+        }
+    }
+</style>
+
     <div class="mobile-header-active mobile-header-wrapper-style">
         <div class="mobile-header-wrapper-inner">
             <div class="mobile-header-top">
@@ -56,6 +114,17 @@
                 </div>
             </div>
         </div>
+        <div class="mobile-search search-style-3 mobile-header-border">
+            <form id="searchForm" action="#" style="width: 50%; margin: 0 auto; position: relative;">
+                <input type="text" id="searchInput" placeholder="Search for items…" 
+                    onkeyup="liveSearch()" 
+                    style="width: 100%; padding: 10px 40px 10px 15px; border: 1px solid #ddd; border-radius: 30px; font-size: 14px; transition: all 0.3s ease; box-sizing: border-box;">
+                <button type="submit" style="display:none;"></button>
+                <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #888;">
+                    <i class="fi-rs-search" style="font-size: 18px;"></i>
+                </span>
+            </form>
+        </div>
         <section class="mt-50 mb-50">
             <div class="container">
                 <div class="row">
@@ -95,11 +164,13 @@
                                     </div>
                                     <div class="sort-by-dropdown">
                                         <ul>
-                                            <li><a class="active" href="#">Featured</a></li>
-                                            <li><a href="/f">Price: Low to High</a></li>
-                                            <li><a href="#">Price: High to Low</a></li>
-                                            <li><a href="#">Release Date</a></li>
-                                            <li><a href="#">Avg. Rating</a></li>
+                                            <li><a href="/products?sortBy=mostPopular">Most Popular</a></li>
+                                            <li><a href="/products?sortBy=priceLowHigh">Price: Low to High</a></li>
+                                            <li><a href="/products?sortBy=priceHighLow">Price: High to Low</a></li>
+                                            <li><a href="/products?sortBy=newArrivals">New Arrivals</a></li>
+                                            <li><a href="/products?sortBy=avgRating">Avg. Rating</a></li>
+                                            <li><a href="/products?sortBy=aToA">aA - zZ</a></li>
+                                            <li><a href="/products?sortBy=zToA">zZ - aA</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -130,6 +201,7 @@
                                             <a href="shop-grid-right.html"><%=products[i].brand%></a>
                                         </div>
                                         <h2><a href="shop-product-right.html"><%=products[i].productName%></a></h2>
+                                        <% if (products[i].quantity > 0) { %>
                                         <div class="rating-result" title="90%">
                                             <span>
                                                 <span>90%</span>
@@ -140,8 +212,11 @@
                                             <span class="old-price">₹<%=products[i].regularPrice%></span>
                                         </div>
                                         <div class="product-action-1 show">
-                                            <a aria-label="Add To Cart" class="action-btn hover-up" href="shop-cart.html"><i class="fi-rs-shopping-bag-add"></i></a>
+                                            <a aria-label="Add To Cart" class="action-btn hover-up" href="/addToCart?productId=<%=products[i]._id%>"><i class="fi-rs-shopping-bag-add"></i></a>
                                         </div>
+                                        <% } else { %>
+                                            <h6 style="color:red">Out of Stock</h6>
+                                        <% } %>
                                     </div>
                                     
                                 </div>
@@ -167,4 +242,112 @@
             </div>
         </section>
     </main>
+    <script>
+        let debounceTimer;
+    
+        function liveSearch() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = document.getElementById('searchInput').value.trim();
+                
+                // If the search query is empty, fetch all products
+                if (!query) {
+                    fetchAllProducts(); // Fetch all products if search query is empty
+                    return;
+                }
+    
+                // Send an AJAX request to search for products
+                fetch(`/search?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const productsContainer = document.querySelector('.row.product-grid-4');
+                        productsContainer.innerHTML = ''; // Clear previous results
+                        
+                        // Iterate over the products and append them to the grid
+                        data.products.forEach(product => {
+                            const productHTML = `
+                                <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                    <div class="product-cart-wrap mb-30">
+                                        <div class="product-img-action-wrap">
+                                            <div class="product-img product-img-zoom">
+                                                <a href="/productDetails?id=${product._id}">
+                                                    <img class="default-img" src="/uploads/re-image/${product.productImage[0]}" alt="${product.productName}">
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="product-content-wrap">
+                                            <div class="product-category">
+                                                <a href="shop-grid-right.html">${product.brand}</a>
+                                            </div>
+                                            <h2><a href="shop-product-right.html">${product.productName}</a></h2>
+                                            <div class="product-price">
+                                                <span>₹${product.salePrice}</span>
+                                                <span class="old-price">₹${product.regularPrice}</span>
+                                            </div>
+                                            <div class="product-action-1 show">
+                                                <a aria-label="Add To Cart" class="action-btn hover-up" href="/addToCart?productId=${product._id}">
+                                                    <i class="fi-rs-shopping-bag-add"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            productsContainer.innerHTML += productHTML; // Append the product HTML
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching search results:', error);
+                    });
+            }, 300); // Adjust the delay as needed
+        }
+    
+        // Function to fetch all products
+        function fetchAllProducts() {
+            fetch('/all-products') // Assuming you have an endpoint for fetching all products
+                .then(response => response.json())
+                .then(data => {
+                    const productsContainer = document.querySelector('.row.product-grid-4');
+                    productsContainer.innerHTML = ''; // Clear previous results
+    
+                    data.products.forEach(product => {
+                        const productHTML = `
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="/productDetails?id=${product._id}">
+                                                <img class="default-img" src="/uploads/re-image/${product.productImage[0]}" alt="${product.productName}">
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-category">
+                                            <a href="shop-grid-right.html">${product.brand}</a>
+                                        </div>
+                                        <h2><a href="shop-product-right.html">${product.productName}</a></h2>
+                                        <div class="product-price">
+                                            <span>₹${product.salePrice}</span>
+                                            <span class="old-price">₹${product.regularPrice}</span>
+                                        </div>
+                                        <div class="product-action-1 show">
+                                            <a aria-label="Add To Cart" class="action-btn hover-up" href="/addToCart?productId=${product._id}">
+                                                <i class="fi-rs-shopping-bag-add"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        productsContainer.innerHTML += productHTML; // Append the product HTML
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching all products:', error);
+                });
+        }
+    </script>
+    
+    
+
     <%- include("../../views/partials/user/footer") %>

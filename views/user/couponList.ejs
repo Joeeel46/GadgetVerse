@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/user/header') %>
+<style>
+    :root {
+        --primary-color: #424874;
+        --secondary-color: #424874;
+        --accent-color: #A9A9A9;
+        --background-light: white;
+        --text-primary: #424874;
+        --text-secondary: #7F8C8D;
+        --border-color: #BDC3C7;
+        --card-shadow: rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Playfair Display', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--background-light);
+        color: var(--text-primary);
+        line-height: 1.6;
+        font-weight: 400;
+    }
+
+    .coupon-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+    }
+
+    .coupon-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .coupon-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        letter-spacing: -1px;
+    }
+
+    .coupon-subtitle {
+        max-width: 800px;
+        margin: 0 auto;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .coupons-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2.5rem;
+    }
+
+    .coupon-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        transition: all 0.4s ease;
+        box-shadow: 0 15px 35px var(--card-shadow);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .coupon-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(to right, #2C3E50, #34495E);
+    }
+
+    .coupon-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .coupon-content {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-grow: 1;
+    }
+
+    .coupon-discount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .coupon-code-container {
+        background-color: #F8F9FA;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .coupon-code {
+        font-family: 'Courier Prime', monospace;
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--secondary-color);
+    }
+
+    .coupon-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .coupon-detail {
+        text-align: center;
+        flex: 1;
+    }
+
+    .coupon-detail-label {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .coupon-detail-value {
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .copy-coupon-btn {
+        width: 100%;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .copy-coupon-btn:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-3px);
+    }
+
+    .no-coupons {
+        grid-column: 1 / -1;
+        text-align: center;
+        background: white;
+        padding: 3rem;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px var(--card-shadow);
+    }
+
+    @media (max-width: 768px) {
+        .coupon-title {
+            font-size: 2.5rem;
+        }
+
+        .coupons-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .back-to-checkout-btn {
+    display: inline-block; /* Makes the link look like a button */
+    padding: 10px 20px;    /* Adds padding for a button-like feel */
+    font-size: 16px;       /* Adjust text size */
+    font-weight: 600;     /* Make the text bold */
+    text-align: center;    /* Center-align the text */
+    text-decoration: none; /* Remove underline */
+    color: #ffffff;        /* Text color */
+    background-color: #424874; /* Button color */
+    border: none;          /* Remove border */
+    border-radius: 5px;    /* Add rounded corners */
+    cursor: pointer;       /* Add pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth transition effect */
+}
+
+.back-to-checkout-btn:hover {
+    background-color: #ffffff; /* Darker shade on hover */
+    color:#424874;
+    border: 2px solid #424874;
+}
+
+</style>
+
+<main class="coupon-container">
+    <header class="coupon-header">
+        <h1 class="coupon-title">Exclusive Offers</h1>
+        <p class="coupon-subtitle">
+            Curated collection of premium discounts. Elevate your shopping experience with our meticulously selected coupon offers.
+        </p> 
+    </header>
+
+    <div class="coupons-grid">
+        <% if (coupons && coupons.length > 0) { %>
+            <% coupons.forEach((coupon) => { %>
+                <div class="coupon-card">
+                    <div class="coupon-content">
+                        <div>
+                            <div class="coupon-discount">
+                                <%= coupon.offerPercentage %>% Off
+                            </div>
+
+                            <div class="coupon-code-container">
+                                <span class="coupon-code"><%= coupon.name %></span>
+                            </div>
+
+                            <div class="coupon-details">
+                                <div class="coupon-detail">
+                                    <span class="coupon-detail-label">Minimum Purchase</span>
+                                    <span class="coupon-detail-value">₹<%= coupon.minimumPrice.toLocaleString() %></span>
+                                </div>
+                                <div class="coupon-detail">
+                                    <span class="coupon-detail-label">Expiration</span>
+                                    <span class="coupon-detail-value"><%= coupon.expiredOn.toLocaleDateString() %></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button 
+                            class="copy-coupon-btn" 
+                            onclick="copyCouponCode('<%= coupon.name %>')"
+                        >
+                            Copy Coupon
+                        </button>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="no-coupons">
+                <h2>No Coupons Available</h2>
+                <p>Exclusive offers coming soon. Stay tuned.</p>
+            </div>
+        <% } %>
+    </div>
+</main>
+
+<%- include('../partials/user/footer') %>
+
+<script>
+    function copyCouponCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Coupon Copied',
+                text: `Coupon code ${code} has been copied to clipboard.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: 'white',
+                iconColor: 'black',
+                color: 'black', 
+                titleColor: 'black',  
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        }).catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Copy Unsuccessful',
+                text: 'Unable to copy coupon code. Please try again.',
+                confirmButtonColor: '#2C3E50',
+                color: 'white',  
+                titleColor: 'white'  
+            });
+        });
+    }
+</script>
+</html>

@@ -1,6 +1,8 @@
 const Product = require('../../models/productSchema')
 const Category = require('../../models/categorySchema')
 const User = require('../../models/userSchema')
+const Order = require('../../models/orderSchema')
+const Wallet = require('../../models/walletSchema')
 
 const productDetails = async (req,res)=>{
     try {
@@ -27,7 +29,50 @@ const productDetails = async (req,res)=>{
         res.redirect("/pageNotFound")
     }
 }
+//wallet
+const cancelOrder = async (req, res) => {
+    try {
+  
+      const userId = req.session.user;
+      const id = req.query.id;
+      const reason = req.query.reason;
+      await Order.findByIdAndUpdate(id, { $set: { status: 'Cancelled',cancellationReason:reason } });
+      const order = await Order.findById(id);
+      console.log(order.paymentMethod);
+  
+      if(order.paymentMethod === "online"){
+        const walletData = {
+          $inc: { balance: order.totalPrice },
+          $push: { 
+            transactions: {
+              type: "Refund",
+              amount: order.totalPrice,
+              orderId: order._id
+            }
+          }
+        }
+        console.log(walletData)
+    
+        const walletUpdate = await Wallet.findOneAndUpdate(
+          {userId:userId},
+          walletData,
+          { upsert: true, new: true }
+        );
+    
+        if(!walletUpdate){
+          throw new Error("Failed to update wallet");
+        }
+      }
+  
+      res.redirect('/userProfile')
+  
+    } catch (error) {
+      console.error("Error loading orders page", error);
+      res.status(500).redirect('/page-not-found');
+    }
+}
 
 module.exports = {
-    productDetails
+    productDetails,
+    cancelOrder
 }

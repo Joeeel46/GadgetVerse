@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const {Schema} = mongoose
 
-const couponSchema = new mongoose.Schema({
+const couponSchema = new Schema({
     name:{
         type:String,
         required:true,
@@ -16,7 +16,7 @@ const couponSchema = new mongoose.Schema({
         type:Date,
         required:true
     },
-    offerPrice:{
+    offerPercentage:{
         type: Number,
         required:true
     },

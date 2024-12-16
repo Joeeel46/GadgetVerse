@@ -8,6 +8,12 @@ const multer = require("multer")
 const bannerController = require("../controllers/admin/bannerController")
 const productController = require("../controllers/admin/productController")
 const brandController = require("../controllers/admin/brandController")
+const orderController = require("../controllers/admin/orderController")
+const stockController = require("../controllers/admin/stockController")
+const couponController = require('../controllers/admin/couponController')
+const salesController = require('../controllers/admin/salesController')
+
+
 const storage = require("../helpers/multer")
 const uploads = multer({storage:storage})
 
@@ -52,6 +58,18 @@ router.get('/banner',adminAuth,bannerController.getBannerPage)
 router.get('/addBanner',adminAuth,bannerController.getAddBannerPage)
 router.post('/addBanner',adminAuth,uploads.single("images"),bannerController.addBanner)
 router.get('/deleteBanner',adminAuth,bannerController.deleteBanner)
+//order management
+router.get('/orders',adminAuth,orderController.getOrderPage)
+router.post('/updateOrderStatus',adminAuth,orderController.updateOrderStatus)
+//stock management
+router.get('/stockPage',adminAuth,stockController.getStockPage)
+router.post('/updateStock',adminAuth,stockController.updateStock)
+//coupon management
+router.get('/coupons',adminAuth,couponController.getCouponPage);
+router.post('/save-coupon',adminAuth,couponController.addCoupon);
+router.get('/delete-coupon',adminAuth,couponController.deleteCoupon);
+//sales
+router.get('/salesReport',adminAuth,salesController.showSaleReport)
 
 
 module.exports = router

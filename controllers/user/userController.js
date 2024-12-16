@@ -7,6 +7,7 @@ const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const bcrypt = require("bcrypt")
 
+
 const pageNotFound = async (req, res) => {
     try {
         res.render("page-404")
@@ -288,6 +289,34 @@ const loadShoppingPage = async (req, res) => {
     }
 };
 
+const liveSearch = async (req, res) => {
+    try {
+        const query = req.query.query; // The search term
+        if (!query) {
+            return res.status(400).json({ message: "Query is required" });
+        }
+
+        // Search for products where the product name matches the query
+        const products = await Product.find({
+            productName: { $regex: query, $options: "i" } // Case-insensitive search
+        }).limit(10); // Limit the results to prevent overload
+
+        return res.json({ products });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+const searchAllProducts = async (req, res) => {
+    try {
+        const products = await Product.find().limit(10); // Limit to avoid overload
+        return res.json({ products });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
 
 module.exports = {
     loadHomePage,
@@ -299,5 +328,7 @@ module.exports = {
     loadLogin,
     login,
     logout,
-    loadShoppingPage
+    loadShoppingPage,
+    liveSearch,
+    searchAllProducts
 }

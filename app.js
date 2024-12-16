@@ -7,7 +7,7 @@ const db = require('./config/db');
 const passport = require('./config/passport')
 const adminRouter = require('./routes/adminRouter')
 const userRouter = require('./routes/userRouter');
-db();
+db()
 
 
 

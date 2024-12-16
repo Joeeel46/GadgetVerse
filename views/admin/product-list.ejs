@@ -17,60 +17,60 @@
                 </tr>
             </thead>
             <tbody>
-                <% for(let i = data.length-1;i>=0;i--) { %>
+                <% if (data.length === 0) { %>
                 <tr>
-                    <td><%=data[i].productName%></td>
-                    <td><%=data[i].brand%></td>
-                    <td><%=data[i].category.name%></td>
-                    <td><%=data[i].salePrice%></td>
+                    <td colspan="9" class="text-center">No Products are added</td>
+                </tr>
+                <% } else { %>
+                <% for (let i = data.length - 1; i >= 0; i--) { %>
+                <tr>
+                    <td><%= data[i].productName %></td>
+                    <td><%= data[i].brand %></td>
+                    <td><%= data[i].category.name %></td>
+                    <td><%= data[i].salePrice %></td>
                     <td>
-                        <% if(locals.data[i].productOffer){ %>
-                            <%=data[i].productOffer%>
-
-                            <%}else{%>
-
-                                0%
-
-                            <%}%>
-
+                        <% if (data[i].productOffer) { %>
+                        <%= data[i].productOffer %>%
+                        <% } else { %>
+                        0%
+                        <% } %>
                     </td>
                     <td>
                         <% if (data[i].productOffer === 0) { %>
-                            <button class="btn btn-info" onclick="addOffer('<%= data[i]._id %>')" style="width: 100px;">
-                                <a href="#" class="text-white">Add Offer</a>
-                            </button>
+                        <button class="btn btn-info" onclick="addOffer('<%= data[i]._id %>')" style="width: 100px;">
+                            <a href="#" class="text-white">Add Offer</a>
+                        </button>
                         <% } else { %>
-                            <button class="btn btn-info" onclick="removeOffer('<%= data[i]._id %>')" style="width: 100px;">
-                                <a href="#" class="text-white">Remove</a>
-                            </button>
+                        <button class="btn btn-info" onclick="removeOffer('<%= data[i]._id %>')" style="width: 100px;">
+                            <a href="#" class="text-white">Remove</a>
+                        </button>
                         <% } %>
                     </td>
-                    
-                    <td><%=data[i].quantity%></td>
+                    <td><%= data[i].quantity %></td>
                     <td>
-
-                        <% if(data[i].isBlocked === false){ %>
-                            <button class="btn btn-danger" onclick="" style="width: 80px;">
-                                <a href="/admin/blockProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration:none;">Block</a>
-                            </button>
-                            <%}else{%>
-                            <button class="btn btn-success" onclick="" style="width: 80px;">
-                                <a href="/admin/unblockProduct?id=<%=data[i]._id%>" class="text-white">UnBlock</a>
-                            </button>
-                            <% } %>
-
+                        <% if (data[i].isBlocked === false) { %>
+                        <button class="btn btn-danger" style="width: 80px;">
+                            <a href="/admin/blockProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration:none;">Block</a>
+                        </button>
+                        <% } else { %>
+                        <button class="btn btn-success" style="width: 80px;">
+                            <a href="/admin/unblockProduct?id=<%= data[i]._id %>" class="text-white">UnBlock</a>
+                        </button>
+                        <% } %>
                     </td>
                     <td class="text-end">
                         <button class="btn btn-info" style="width: 80px">
-                            <a href="/admin/editProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Edit</a>
+                            <a href="/admin/editProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration: none;">Edit</a>
                         </button>
                     </td>
                 </tr>
+                <% } %>
                 <% } %>
             </tbody>
         </table>
     </div>
 </div>
+
 <div class="pagination-area mt-30 mb-50">
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">

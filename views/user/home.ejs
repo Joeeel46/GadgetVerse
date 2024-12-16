@@ -130,20 +130,22 @@
             <div class="tab-content wow fadeIn animated" id="myTabContent">
                 <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
                     <div class="row product-grid-4">
-                        <%for(let i = 0;i<products.length;i++){%>
+                        <% for (let i = 0; i < products.length; i++) { %>
                         <div class="col-lg-3 col-md-4 col-12 col-sm-6">
                             <div class="product-cart-wrap mb-30">
                                 <div class="product-img-action-wrap">
                                     <div class="product-img product-img-zoom">
-
-                                        <a href="/productDetails?id=<%=products[i]._id%>">
-                                            <img class="default-img" src="/uploads/re-image/<%=products[i].productImage[0]%>" alt="<%=products[i].productName%>">
+                                        <a href="/productDetails?id=<%= products[i]._id %>">
+                                            <img class="default-img" src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
                                         </a>
                                     </div>
                                     <div class="product-action-1">
-                                        
-                                        <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/addToWishList?id=<%products[i]._id%>"><i class="fi-rs-heart"></i></a>
-                                        
+                                        <a
+                                            aria-label="Add To Wishlist"
+                                            class="action-btn hover-up add-to-wishlist"
+                                            data-product-id="<%= products[i]._id %>">
+                                            <i class="fi-rs-heart"></i>
+                                        </a>
                                     </div>
                                     <div class="product-badges product-badges-position product-badges-mrg">
                                         <span class="hot">Hot</span>
@@ -151,27 +153,25 @@
                                 </div>
                                 <div class="product-content-wrap">
                                     <div class="product-category">
-                                        <a href="shop-grid-right.html"><%=products[i].brand%></a>
+                                        <a href="shop-grid-right.html"><%= products[i].brand %></a>
                                     </div>
-                                    <h2><a href="shop-product-right.html"><%=products[i].productName%></a></h2>
+                                    <h2><a href="shop-product-right.html"><%= products[i].productName %></a></h2>
                                     <div class="rating-result" title="90%">
                                         <span>
                                             <span>90%</span>
                                         </span>
                                     </div>
                                     <div class="product-price">
-                                        <span>₹<%=products[i].salePrice%></span>
-                                        <span class="old-price">₹<%=products[i].regularPrice%></span>
+                                        <span>₹<%= products[i].salePrice %></span>
+                                        <span class="old-price">₹<%= products[i].regularPrice %></span>
                                     </div>
                                     <div class="product-action-1 show">
-                                        <a aria-label="Add To Cart" class="action-btn hover-up" href="shop-cart.html"><i class="fi-rs-shopping-bag-add"></i></a>
+                                        <a aria-label="Add To Cart" class="action-btn hover-up" href="#"><i class="fi-rs-shopping-bag-add"></i></a>
                                     </div>
                                 </div>
-                                
                             </div>
-                            
                         </div>
-                        <%}%>
+                        <% } %>
                     </div>
                     <!--End product-grid-4-->
                 </div>
@@ -179,5 +179,36 @@
         </div>
     </section>
 </main>
+
+<script>
+    document.querySelectorAll('.add-to-wishlist').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const productId = button.getAttribute('data-product-id');
+
+            try {
+                const response = await fetch('/addToWishList', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ product_id: productId })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire('Success', data.message, 'success');
+                } else {
+                    Swal.fire('Error', data.error || 'Failed to add to wishlist', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Something went wrong', 'error');
+                console.error('Error adding to wishlist:', error);
+            }
+        });
+    });
+</script>
 
 <%- include("../../views/partials/user/footer") %>

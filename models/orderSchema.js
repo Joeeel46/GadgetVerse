@@ -4,6 +4,11 @@ const {v4:uuidv4} = require("uuid")
 
 
 const orderSchema = new Schema({
+    userId:{
+        type:Schema.Types.ObjectId,
+        ref:'User',
+        required:true
+    },
     orderId: {
         type: String,
         default:()=>uuidv4(),
@@ -36,10 +41,39 @@ const orderSchema = new Schema({
         type:Number,
         required:true
     },
-    address:{
-        type:Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+    shippingAddress:{
+        addressType:{
+            type:String,
+            required:true
+        },
+        name:{
+            type:String,
+            required:true
+        },
+        city:{
+            type:String,
+            required:true
+        },
+        landMark:{
+            type:String,
+            required:true
+        },
+        state:{
+            type:String,
+            required:true
+        },
+        pincode:{
+            type:Number,
+            required:true
+        },
+        phone:{
+            type:String,
+            required:true
+        },
+        altPhone:{
+            type:String,
+        },
+    
     },
     invoiceDate:{
         type:Date
@@ -57,11 +91,24 @@ const orderSchema = new Schema({
     couponApplied:{
         type:Boolean,
         default:false
+    },
+    couponCode:{
+        type:String,
+        default:''
+    },
+    paymentMethod:{
+        type:String,
+        enum:['COD','online']
+    },
+    paymentStatus:{
+        type:String,
+        enum:['Pending','Processing','Completed','Failed'],
+        default:'Pending'
     }
 })
 
 
-const Order = mongoose.model("Oder",orderSchema)
+const Order = mongoose.model("Order",orderSchema)
 
 
 

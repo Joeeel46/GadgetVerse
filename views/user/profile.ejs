@@ -147,7 +147,7 @@
                  </li>
                  <li class="nav-item">
                    <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#track-orders" role="tab" aria-controls="track-orders" aria-selected="false">
-                     <i class="fi-rs-shopping-cart-check mr-10"></i>Wallet Status
+                     <i class="fi-rs-shopping-cart-check mr-10"></i>Wallet
                    </a>
                  </li>
                  <li class="nav-item">
@@ -172,24 +172,64 @@
              <div class="tab-content dashboard-content">
 
 
+               
+
                <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-                 <div class="card card-green">
-                   <div class="card-header">
-                     <h5 class="mb-0 text-center">User Profile</h5>
-                   </div>
-                   <div class="card-body text-center">
-                     <h5 class="card-title"><%=user.name%></h5>
-                     <p class="card-text">
-                       <strong>Phone: <%=user.phone%></strong>
-                     </p>
-                     <p class="card-text">
-                       <strong>Email: <%=user.email%></strong>
-                     </p>
-                     <a href="/change-email" class="btn btn-sm btn-success ml-2">Change Email</a>
-                     <a href="/change-password" class="btn btn-sm btn-success">Change Password</a>
-                   </div>
-                 </div>
-               </div>
+                <div class="card card-green">
+                  <div class="card-header">
+                    <h5 class="mb-0 text-center">User Profile</h5>
+                  </div>
+                  <div class="card-body text-center">
+                    <!-- Editable Fields -->
+                    <form id="update-profile-form">
+                      <div class="form-group">
+                        <label for="userName">Name:</label>
+                        <input type="text" id="userName" class="form-control" value="<%= user.name %>" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="userPhone">Phone:</label>
+                        <input type="text" id="userPhone" class="form-control" value="<%= user.phone %>">
+                      </div>
+                      <div class="form-group">
+                        <label for="userEmail">Email:</label>
+                        <input type="email" id="userEmail" class="form-control" value="<%= user.email %>" required>
+                      </div>
+                      <button type="button" class="btn btn-success" id="updateProfileBtn">Save Changes</button>
+                    </form>
+                    <hr>
+                    <!-- Edit Password -->
+                    <button type="button" class="btn btn-warning" id="changePasswordBtn">Change Password</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Change Password Modal -->
+              <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <form id="change-password-form">
+                        <div class="form-group">
+                          <label for="currentPassword">Current Password:</label>
+                          <input type="password" id="currentPassword" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="newPassword">New Password:</label>
+                          <input type="password" id="newPassword" class="form-control" required>
+                        </div>
+                        <button type="button" class="btn btn-success" id="updatePasswordBtn">Update Password</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
 
 
                <div
@@ -263,19 +303,31 @@
                            <tr>
                              <th>Order</th>
                              <th>Status</th>
+                             <th>Date</th>
                              <th>Total</th>
+                             <th>Order Details</th>
                              <th>Actions</th>
                            </tr>
                          </thead>
                          <tbody>
-                           <tr>
-                             <td></td>
-                             <td></td>
-                             <td></td>
-                             <td>
-                               <a href="" class="btn-small d-block">View</a>
-                             </td>
-                           </tr>
+                          <%if(orders){%>
+                            <%orders.forEach(order=>{%>
+                              <tr>
+                                <td><%=order.orderId%></td>
+                                <td><%=order.status%></td>
+                                <td><%=order.createdOn.toLocaleDateString()%></td>
+                                <td><%=order.finalAmount%></td>
+                                <td><a href="/orderDetails?id=<%=order.orderId%>" class="btn-small d-block">View</a></td>
+                                <td><%if(order.status !== 'Cancelled' && order.status !== 'Delivered' && order.status !== 'Return Request' && order.status !== 'Returned'){%>
+                                  <a href="/cancelOrder?id=<%=order._id%>">Cancel</a>
+                                  <% }else if(order.status === 'Delivered'){%>
+                                    <a href="">Return</a>
+                                    <% } %>
+                                </td>
+                              </tr>
+                              <% }) %>
+                            <% } %>
+                           
                          </tbody>
                        </table>
                      </div>
@@ -293,10 +345,17 @@
                      <div class="row">
                        <div class="col-lg-8 mx-auto text-center mt-90">
                          <form>
+                          <% if(wallet){ %>
                            <div class="form-group">
-                             <label for="walletAmount" class="h4">Amount</label>
+                             <label for="walletAmount" class="h4">Available Balance: ₹<%=wallet.balance.toLocaleString()%></label>
                              <div class="h3"></div>
                            </div>
+                           <% }else{ %>
+                           <div class="form-group">
+                            <label for="walletAmount" class="h4">Available Balance: 0</label>
+                            <div class="h3"></div>
+                          </div>
+                          <% } %>
                            <button type="button" class="btn btn-success" onclick="">Add Money</button>
                          </form>
                        </div>
@@ -352,4 +411,101 @@
    </div>
  </section>
 </main>
+<script>
+
+  // Update Profile AJAX Request
+  // Update Profile AJAX Request
+document.getElementById('updateProfileBtn').addEventListener('click', () => {
+  const userName = document.getElementById('userName').value;
+  const userPhone = document.getElementById('userPhone').value;
+  const userEmail = document.getElementById('userEmail').value;
+
+  fetch('/update-profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name: userName, phone: userPhone, email: userEmail }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your profile has been updated successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message || 'Failed to update profile. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'Retry',
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Something went wrong. Please try again later.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    });
+});
+
+// Change Password AJAX Request
+document.getElementById('updatePasswordBtn').addEventListener('click', () => {
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+
+  fetch('/change-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: data.message || 'Password changed successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        }).then(() => {
+          // Hide the modal after user clicks OK
+          $('#changePasswordModal').modal('hide');
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message || 'Failed to change password. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'Retry',
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Something went wrong. Please try again later.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    });
+});
+
+// Show Change Password Modal
+document.getElementById('changePasswordBtn').addEventListener('click', () => {
+  $('#changePasswordModal').modal('show');
+});
+
+
+</script>
+
 <%- include("../../views/partials/user/footer") %>

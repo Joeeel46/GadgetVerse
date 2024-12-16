@@ -1,5 +1,7 @@
 const User = require('../../models/userSchema')
 const Address = require('../../models/addressSchema')
+const Order = require('../../models/orderSchema')
+const Wallet = require('../../models/walletSchema')
 const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 const env = require('dotenv').config()
@@ -157,9 +159,13 @@ const userProfile = async (req,res)=>{
         const userId = req.session.user
         const userData = await User.findById(userId)
         const addressData = await Address.findOne({userId:userId})
+        const orders = await Order.find({userId})
+        const wallet = await Wallet.findOne({userId:userId});
         res.render('profile',{
             user:userData,
-            userAddress:addressData
+            userAddress:addressData,
+            orders,
+            wallet
         })
     } catch (error) {
         console.error("Error for retreving profile data",error)
@@ -291,7 +297,56 @@ const deleteAddress = async (req,res)=>{
     }
 }
 
+const updateUserProfile = async (req, res) => {
+    try {
+      const { name, phone, email } = req.body;
+      const userId = req.session.user; // Assuming `req.user` contains authenticated user info
+  
+      // Update user document
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, phone, email },
+        { new: true, runValidators: true }
+      );
+  
+      if (updatedUser) {
+        return res.status(200).json({ message: "Profile updated successfully", success: true });
+      } else {
+        return res.status(400).json({ message: "Failed to update profile", success: false });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error", success: false });
+    }
+};
 
+const changeUserPassword = async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.session.user; // Assuming `req.user` contains authenticated user info
+  
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: "User not found", success: false });
+  
+      // Verify current password
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect", success: false });
+      }
+  
+      // Update to new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+  
+      return res.status(200).json({ message: "Password updated successfully", success: true });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error", success: false });
+    }
+  };
+  
+  
 
 module.exports = {
     getForgotPassPage,
@@ -305,5 +360,7 @@ module.exports = {
     postAddAddress,
     editAddress,
     postEditAddress,
-    deleteAddress
+    deleteAddress,
+    updateUserProfile,
+    changeUserPassword
 }
