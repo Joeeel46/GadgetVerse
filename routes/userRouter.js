@@ -8,8 +8,15 @@ const profileController = require('../controllers/user/profileController')
 const cartController = require('../controllers/user/cartController')
 const wishlistController = require('../controllers/user/wishlistController')
 const paymentController = require('../controllers/user/paymentController')
+const walletController = require('../controllers/user/walletController')
+const invoiceController = require('../controllers/user/invoiceController')
+const User = require('../models/userSchema')
 
-
+router.use(async(req, res, next) => {
+    const userData = await User.findById(req.session.user);
+    res.locals.user = userData || null;
+    next();
+});
 
 router.get("/signup",userController.loadSignup)
 router.get("/pagenotfound",userController.pageNotFound)
@@ -71,10 +78,12 @@ router.post('/removeWishlistItem',userAuth,wishlistController.removeWishlistItem
 //payment
 router.post("/createPayment",userAuth,paymentController.createPayment);
 router.post("/updatePayment",userAuth,paymentController.updatePaymentStatus);
+router.post("/repayment-status",userAuth,paymentController.updateRepaymentStatus)
 router.post("/retry-payment",userAuth,paymentController.retryPayment);
 router.post("/ondismiss",userAuth,paymentController.ondismiss)
 //wallet
 router.get('/cancelOrder',userAuth,productController.cancelOrder)
+router.post('/returnProduct',userAuth,walletController.returnItem)
 //coupon
 router.get('/couponlist',userAuth,paymentController.getCouponList);
 router.post("/applyCoupon",userAuth,paymentController.applyCoupon);
@@ -82,6 +91,8 @@ router.post('/remove-coupon',userAuth,paymentController.removeCoupon);
 //profile edit
 router.post('/update-profile',userAuth,profileController.updateUserProfile);
 router.post('/change-password',userAuth,profileController.changeUserPassword);
+//invoice
+router.get('/downloadInvoice',invoiceController.invoiceDownload)
 
 
 module.exports = router

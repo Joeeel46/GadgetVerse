@@ -28,10 +28,16 @@ const couponSchema = new Schema({
         type:Boolean,
         default:true
     },
-    userId:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
-    }]
+    userId: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+    ],
+    maxDiscount: {
+        type: Number,
+        required: true
+    }
 })
 
 

@@ -33,7 +33,14 @@
                                     id="minimumPrice" name="minimumPrice" />
                                 <small id="minimumError" style="color: red; display: none;">Minimum price can't be empty</small>
                             </div>
-                    
+
+                            <div class="mb-4">
+                                <label class="form-label">Maximum Discount Amount</label>
+                                <input type="number" placeholder="Enter Maximum Amount" class="form-control"
+                                    id='maxdiscount' name="maxdiscount" />
+                                <small id="maximumError" style="color: red; display: none;">Maximum price can't be empty</small>
+                            </div>
+                            
                             <div class="mb-4">
                                 <label class="form-label">Created On</label>
                                 <input type="date" class="form-control" id="createdDate" name="createdOn" />
@@ -58,7 +65,8 @@
                                         <tr>
                                             <th>Coupon Code</th>
                                             <th>Discount Percentage</th>
-                                            <!-- <th>Status</th> -->
+                                            <th>Max Discount Amount</th>
+                                            <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -71,7 +79,10 @@
                                                 <td>
                                                     <%=coupons[i].offerPercentage%>
                                                 </td>
-                                                <!-- <%if(coupons[i].isList){%>
+                                                <td>
+                                                    <%=coupons[i].maxDiscount%>
+                                                </td>
+                                                <%if(coupons[i].isList){%>
                                                 <td>
                                                     <span class="badge rounded-pill alert-success">Active</span>
                                                 </td>
@@ -79,7 +90,7 @@
                                                 <td>
                                                     <span class="badge rounded-pill alert-danger">Inactive</span>
                                                 </td>
-                                            <%}%> -->
+                                            <%}%>
                                                   <td>
                                                     <button class="btn btn-danger text-white"
                                                         onclick="confirmDelete('<%= coupons[i]._id %>')">Delete</button>
@@ -156,6 +167,7 @@
             minimumPrice: document.getElementById('minimumPrice').value,
             createdOn: document.getElementById('createdDate').value,
             expireOn: document.getElementById('endDate').value,
+            maxDiscount: document.getElementById('maxdiscount').value
         };
 
         try {
@@ -255,12 +267,14 @@
             // const discountPrice = document.getElementById("discountPrice");
             const discountPercentage = document.getElementById("discountPercentage");
             const minimumPrice = document.getElementById("minimumPrice");
+            const maxDiscount = document.getElementById('maxdiscount')
             const createdDate = document.getElementById("createdDate");
             const endDate = document.getElementById("endDate");
 
             document.getElementById("codeError").style.display = "none";
             document.getElementById("discountError").style.display = "none";
             document.getElementById("minimumError").style.display = "none";
+            document.getElementById("maximumError").style.display = "none"
             document.getElementById("createdError").style.display = "none";
             document.getElementById("endDateError").style.display = "none";
 
@@ -269,10 +283,7 @@
                 isValid = false;
             }
 
-            // if (!discountPrice.value.trim() || discountPrice.value <= 0) {
-            //     document.getElementById("discountError").style.display = "block";
-            //     isValid = false;
-            // }
+            
 
             const discountValue = parseInt(discountPercentage.value, 10);
             if (!discountPercentage.value.trim() || discountValue < 1 || discountValue > 100) {
@@ -282,6 +293,11 @@
 
             if (!minimumPrice.value.trim() || minimumPrice.value <= 0) {
                 document.getElementById("minimumError").style.display = "block";
+                isValid = false;
+            }
+
+            if (!maxDiscount.value.trim() || maxDiscount.value <= 0) {
+                document.getElementById("maximumError").style.display = "block";
                 isValid = false;
             }
 

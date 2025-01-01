@@ -70,6 +70,7 @@ router.post('/save-coupon',adminAuth,couponController.addCoupon);
 router.get('/delete-coupon',adminAuth,couponController.deleteCoupon);
 //sales
 router.get('/salesReport',adminAuth,salesController.showSaleReport)
+router.get('/downloadSalesPDF',adminAuth,salesController.saleReportPDF)
 
 
 module.exports = router

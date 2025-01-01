@@ -108,7 +108,10 @@ const loadHomePage = async (req, res) => {
                 category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}
             }
         )
-        productData.sort((a,b)=> new Date(b.createdOn)-new Date(a.createdOn))
+        .populate('category')
+        .sort({ createdAt: -1 }) // Sort by `createdAt` in descending order (most recent first)
+        .limit(4);
+
         if(user){
             
             const userData = await User.findById({_id:user})
@@ -255,7 +258,7 @@ const loadShoppingPage = async (req, res) => {
         const categories = await Category.find({ isListed: true });
         const categoryIds = categories.map((category) => category._id.toString());
         const page = parseInt(req.query.page) || 1;
-        const limit = 9;
+        const limit = 8;
         const skip = (page - 1) * limit;
 
         const products = await Product.find({
@@ -274,7 +277,7 @@ const loadShoppingPage = async (req, res) => {
 
         const brands = await Brand.find({ isBlocked: false }); 
         const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
-
+       
         res.render("shop", {
             user: userData,
             products: products,

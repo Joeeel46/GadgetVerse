@@ -18,244 +18,357 @@
 
     <!-- Custom Styles -->
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --error: #ef4444;
+        }
+        
+        /* Previous styles remain unchanged */
         body {
+            background-color: var(--background);
+            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
-            font-family: "Nunito Sans", sans-serif;
-            background-color: #f8f9fa;
+            padding: 0;
+            color: var(--text);
         }
-
+        
         .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            display: grid;
+            place-items: center;
+            padding: 1rem;
         }
-
+        
         .login-wrap {
+            background: var(--card);
+            border-radius: 1rem;
+            padding: 2rem;
             width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 420px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
-
+        
+        .heading_s1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
         .heading_s1 h3 {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
         }
-
+        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
-
-        .form-control {
-            height: 45px;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+        
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
         }
-
+        
+        .otp-input {
+            width: 92%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            letter-spacing: 0.25em;
+            text-align: center;
+        }
+        
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .otp-input:disabled {
+            background-color: var(--background);
+            cursor: not-allowed;
+        }
+        
         .btn {
-            height: 45px;
-            font-size: 16px;
-            border-radius: 5px;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
         }
-
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .btn-primary {
-            background-color: #007bff;
-            border: none;
+            background: var(--primary);
+            color: white;
         }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
+        
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
         }
-
+        
         .btn-secondary {
-            background-color: #6c757d;
-            border: none;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 1rem;
         }
-
-        .btn-secondary:hover {
-            background-color: #5a6268;
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--background);
         }
-
+        
         .otp-timer {
-            margin: 10px auto 0;
-            font-size: 14px;
             text-align: center;
-            position: relative;
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            border: 2px solid #ddd;
-            border-radius: 50%;
-            background: #f9f9f9;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
-
-        #timerValue {
-            font-size: 20px;
-            font-weight: bold;
-            color: #007bff;
+        
+        .otp-timer .expired {
+            color: var(--error);
+            font-weight: 600;
         }
-
-        #timerValue.expired {
-            color: red;
-            font-size: 14px;
-        }
-
-        .alert-danger {
-            margin-top: 15px;
-            text-align: center;
-            color: red;
-        }
-
-        .text-center {
-            margin-top: 15px;
-        }
-
+        
         .text-muted {
-            color: #6c757d;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
-
-        @media (max-width: 576px) {
-            .login-wrap {
-                padding: 20px;
-            }
+        
+        .text-muted a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .text-muted a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .error-shake {
+            animation: shake 0.5s ease-in-out;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="login-wrap">
-        <div class="heading_s1">
-            <h3>Email Verification</h3>
-        </div>
-        <form id="otpForm" action="" method="post" onsubmit="return validateOTPForm()">
-            <div class="form-group">
-                <label for="otp">Enter OTP</label>
-                <input type="text" id="otp" name="otp" class="form-control" required maxlength="6" pattern="\d*" placeholder="6-digit OTP" />
+    <div class="container">
+        <div class="login-wrap">
+            <div class="heading_s1">
+                <h3>Verify Your Email</h3>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Verify Email</button>
-            <div class="form-group text-center">
-                <div id="otpTimer" class="otp-timer">
-                    <span id="timerValue">60</span>
+            <form id="otpForm" onsubmit="return validateOTPForm(event)">
+                <div class="form-group">
+                    <label for="otp">Enter verification code</label>
+                    <input 
+                        type="text" 
+                        id="otp" 
+                        class="otp-input"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        required
+                        maxlength="6"
+                        pattern="\d{6}"
+                        placeholder="••••••"
+                    />
                 </div>
-                <button type="button" class="btn btn-secondary btn-block mt-3">Resend OTP</button>
+                <button type="submit" class="btn btn-primary" id="verifyBtn">
+                    Verify Email
+                </button>
+                <div class="otp-timer">
+                    Resend code in <span id="timerValue">60</span><span id="timerSuffix">s</span>
+                </div>
+                <button type="button" class="btn btn-secondary" id="resendBtn" disabled>
+                    Resend verification code
+                </button>
+            </form>
+            <div class="text-muted">
+                Already verified? <a href="/login">Sign in</a>
             </div>
-            <% if (locals.message && message.length > 0) { %>
-            <div class="alert alert-danger"><%= message %></div>
-            <% } %>
-        </form>
-        <div class="text-muted text-center">
-            Already verified? <a href="/login">Login now</a>
         </div>
     </div>
-</div>
 
-<!-- JS Libraries -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Custom Scripts -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const otpForm = document.getElementById('otpForm');
-        const resendButton = document.querySelector('.btn-secondary');
+    <!-- Custom Scripts -->
+    <script>
+        let isTimerExpired = false;
+        let timer = 60;
+        let timerInterval;
 
-        // Start timer when page loads
-        startTimer();
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('otp');
+            const resendButton = document.getElementById('resendBtn');
+            const verifyButton = document.getElementById('verifyBtn');
 
-        // Handle form submission
-        otpForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            validateOTPForm();
-        });
-
-        // Handle resend button click
-        resendButton.addEventListener('click', function() {
-            resendOTP();
-        });
-    });
-
-    async function validateOTPForm() {
-        const otpInput = document.getElementById("otp").value;
-
-        if (!otpInput || otpInput.length !== 6) {
-            Swal.fire({
-                icon: "error",
-                title: "Invalid OTP",
-                text: "Please enter a valid 6-digit OTP"
-            });
-            return false;
-        }
-
-        // Simulate form submission logic
-        const response = await fetch("/verify-otp", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ otp: otpInput })
+            // Only allow numbers in the OTP input
+            otpInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
             });
 
-            const result = await response.json();
+            // Start timer when page loads
+            startTimer();
 
-            if (result.success) {
+            // Handle resend button click
+            resendButton.addEventListener('click', function() {
+                resendOTP();
+            });
+        });
+
+        async function validateOTPForm(event) {
+            event.preventDefault();
+            
+            if (isTimerExpired) {
                 Swal.fire({
-                    icon: "success",
-                    title: "OTP Verified Successfully",
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    window.location.href = result.redirectUrl; // Redirect to the provided URL
+                    icon: "warning",
+                    title: "OTP Expired",
+                    text: "Please click on resend to get a new OTP",
+                    confirmButtonColor: "#4f46e5"
                 });
-            } else {
+                return false;
+            }
+
+            const otpInput = document.getElementById("otp");
+            const otpValue = otpInput.value;
+
+            if (!otpValue || otpValue.length !== 6 || !/^\d+$/.test(otpValue)) {
+                otpInput.classList.add('error-shake');
+                setTimeout(() => otpInput.classList.remove('error-shake'), 500);
+                
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid OTP",
+                    text: "Please enter a valid 6-digit OTP",
+                    confirmButtonColor: "#4f46e5"
+                });
+                return false;
+            }
+
+            try {
+                // Simulate form submission logic
+                const response = await fetch("/verify-otp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ otp: otpValue })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "OTP Verified Successfully",
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = result.redirectUrl;
+                    });
+                } else {
+                    throw new Error(result.message || 'Verification failed');
+                }
+            } catch (error) {
                 Swal.fire({
                     icon: "error",
                     title: "Verification Failed",
-                    text: result.message
+                    text: error.message || "Something went wrong. Please try again.",
+                    confirmButtonColor: "#4f46e5"
                 });
             }
-    }
+        }
 
-    function resendOTP() {
-        Swal.fire({
-            icon: "success",
-            title: "OTP Resent Successfully",
-            showConfirmButton: false,
-            timer: 1500
-        });
-        startTimer();
-    }
+        function resendOTP() {
+            // Reset the expired state
+            isTimerExpired = false;
+            
+            // Enable the input and verify button
+            document.getElementById("otp").disabled = false;
+            document.getElementById("verifyBtn").disabled = false;
+            
+            // Clear the input
+            document.getElementById("otp").value = '';
+            
+            // Disable the resend button
+            document.getElementById("resendBtn").disabled = true;
+            
+            Swal.fire({
+                icon: "success",
+                title: "OTP Resent Successfully",
+                text: "Please check your email for the new OTP",
+                showConfirmButton: false,
+                timer: 1500
+            });
+            
+            startTimer();
+        }
 
-    let timer = 60;
-    let timerInterval;
+        function startTimer() {
+            clearInterval(timerInterval);
+            timer = 60;
+            isTimerExpired = false;
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        timer = 60;
-
-        timerInterval = setInterval(() => {
             const timerElement = document.getElementById("timerValue");
-            timer--;
+            const timerSuffix = document.getElementById("timerSuffix");
+            const resendButton = document.getElementById("resendBtn");
+            const otpInput = document.getElementById("otp");
+            const verifyButton = document.getElementById("verifyBtn");
 
-            if (timer <= 0) {
-                clearInterval(timerInterval);
-                timerElement.classList.add("expired");
-                timerElement.textContent = "Expired";
-                document.getElementById("otp").disabled = true;
-            } else {
-                timerElement.textContent = timer;
-            }
-        }, 1000);
-    }
-</script>
+            timerElement.classList.remove("expired");
+            timerElement.textContent = timer;
+            timerSuffix.style.display = "inline"; // Ensure "s" is visible initially
+
+            timerInterval = setInterval(() => {
+                timer--;
+
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.classList.add("expired");
+                    timerElement.textContent = "Expired";
+                    timerSuffix.style.display = "none"; // Hide "s" when expired
+
+                    // Update state and UI
+                    isTimerExpired = true;
+                    resendButton.disabled = false;
+                    otpInput.disabled = true;
+                    verifyButton.disabled = true;
+                } else {
+                    timerElement.textContent = timer;
+                    timerSuffix.style.display = "inline"; // Keep "s" visible for numbers
+                }
+            }, 1000);
+        }
+
+    </script>
 </body>
 </html>

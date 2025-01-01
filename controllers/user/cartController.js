@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
+const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const Address = require("../../models/addressSchema");
 const Order = require("../../models/orderSchema");
@@ -27,84 +28,94 @@ const getCart = async (req,res)=>{
     }
 }
 
-const addToCart = async (req,res)=>{
+const addToCart = async (req, res) => {
     try {
-        
-        if(req.session.user){
-            const userId = req.session.user
-            
-            const {productId} = req.query
-            
-            const quantity = req.query.quantity
-            
-            
-            const quantityNumber = parseInt(quantity,10) || 1
-            
-            const product = await Product.findById(productId)
-           
-            
-            const productPrice = product.salePrice
-            const itemTotalPrice = productPrice * quantityNumber
-            let cart = await Cart.findOne({userId:userId})
+        if (req.session.user) {
+            const userId = req.session.user;
+            const { productId } = req.query;
+            const quantity = req.query.quantity;
+            const quantityNumber = parseInt(quantity, 10) || 1;
 
-            if(!cart){
+            const product = await Product.findById(productId);
+            const productPrice = product.salePrice;
+            const itemTotalPrice = productPrice * quantityNumber;
+
+            let cart = await Cart.findOne({ userId: userId });
+
+            if (!cart) {
                 cart = new Cart({
                     userId,
-                    items:[{
+                    items: [{
                         productId,
-                        quantity:quantityNumber,
-                        price:productPrice,
-                        totalPrice:itemTotalPrice
+                        quantity: quantityNumber,
+                        price: productPrice,
+                        totalPrice: itemTotalPrice
                     }]
-                })
-            }else{
-                const itemIndex = cart.items.findIndex(item => item.productId.equals(productId))
-                if(itemIndex > -1){
-                        const existingQuantity = cart.items[itemIndex].quantity;
-                        if (existingQuantity + quantityNumber <= 5) {
-                            cart.items[itemIndex].quantity += quantityNumber
-                            cart.items[itemIndex].totalPrice = cart.items[itemIndex].quantity * productPrice
-                        }
-                    await cart.save();
-                    
-
-                }else{
+                });
+            } else {
+                const itemIndex = cart.items.findIndex(item => item.productId.equals(productId));
+                if (itemIndex > -1) {
+                    const existingQuantity = cart.items[itemIndex].quantity;
+                    if (existingQuantity + quantityNumber <= 5) {
+                        cart.items[itemIndex].quantity += quantityNumber;
+                        cart.items[itemIndex].totalPrice = cart.items[itemIndex].quantity * productPrice;
+                    } else {
+                        return res.status(400).json({
+                            status:400,
+                            icon: 'info',
+                            message: 'Maximum quantity exceeded for this product'
+                        });
+                    }
+                } else {
                     cart.items.push({
                         productId,
-                        quantity:quantityNumber,
-                        price:productPrice,
-                        totalPrice:itemTotalPrice
-                    })
+                        quantity: quantityNumber,
+                        price: productPrice,
+                        totalPrice: itemTotalPrice
+                    });
                 }
             }
-            await cart.save()
-            return res.status(200).redirect('/cart')
-        }else{
-            res.redirect('/login')
+            await cart.save();
+            return res.status(200).json({
+                status:200,
+                icon: 'success',
+                message: 'Product added to cart successfully!'
+            });
+        } else {
+            res.status(401).json({
+                icon: 'info',
+                message: 'Please login to add products to the cart'
+            });
         }
     } catch (error) {
-        console.error("Error adding to cart:",error)
-        res.status(500).send("Error adding to cart")
+        console.error("Error adding to cart:", error);
+        res.status(500).json({
+            icon: 'error',
+            message: "Error adding to cart"
+        });
     }
-}
+};
+
 
 const removeCart = async (req,res)=>{
     try {
-        const userId = req.session.user
-        const {productId} = req.query
+        const userId = req.session.user;
+        const { productId } = req.query;
 
-        const cart = await Cart.findOne({userId})
+        const cart = await Cart.findOne({ userId });
 
-        if(cart){
-            let itemIndex = cart.items.findIndex(item => item.productId.equals(productId))
-            // console.log(itemIndex)
-            cart.items.splice(itemIndex,1)
-            await cart.save()
+        if (cart) {
+            let itemIndex = cart.items.findIndex(item => item.productId.equals(productId));
+            if (itemIndex > -1) {
+                cart.items.splice(itemIndex, 1);
+                await cart.save();
+            }
         }
-        res.redirect("/cart")
+
+        res.status(200).json({ message: "Product removed from cart successfully!" });
     } catch (error) {
-        console.error("Error removing from cart:",error)
-        res.status(500).send("Error removing from cart")
+        console.error("Error removing from cart:", error);
+        res.status(500).json({ message: "Error removing from cart" });
     }
 }
 
@@ -124,7 +135,7 @@ const checkOut = async (req,res)=>{
             if(!product || product.isBlocked){
                 return res.status(404).redirect("/pageNotFound")
             }
-            totalPrice = product.salePrice
+            totalPrice = product.salePrice*qty
             return res.render('checkout',{carts:null,product,addresses:addresses.address,totalPrice,user,qty})
 
         }else{
@@ -156,7 +167,7 @@ const saveOrder = async (req, res) => {
     
         // Directly use req.body.formData
         const data = req.body.formData || req.body;
-        console.log(data);
+        
         const {
           singleProduct,
           cart,
@@ -170,9 +181,10 @@ const saveOrder = async (req, res) => {
           singleProductQuantity,
           couponCode,
         } = data;
-        // console.log("finalAMount,discount",)
+        console.log("cart data",cartData,"cart",cart);
+        
+
         const addresses = await Address.findOne({ userId: req.session.user });
-        console.log("cart",data)
     
         if (!addresses || !addresses.address || addresses.address.length === 0) {
           return res
@@ -215,7 +227,6 @@ const saveOrder = async (req, res) => {
           ? parseInt(singleProductQuantity, 10)
           : 1;
 
-          console.log("wewfd",singleProductId)
         await Product.findByIdAndUpdate(
           { _id: singleProductId },
           { $inc: { quantity: -quantityToUpdate } }
@@ -224,14 +235,12 @@ const saveOrder = async (req, res) => {
   
       let orderedItems = [];
       const product = singleProduct ? JSON.parse(singleProduct) : null;
-      console.log("product",product)
       if (product && product._id) {
         orderedItems.push({
           product: product._id,
-          quantity: 1,
+          quantity: Number(singleProductQuantity),
           price: product.salePrice,
         });
-        console.log("orderf=desnlcsndkcls",orderedItems)
       } 
       if (cart !== '[]') {
         const cartItems = JSON.parse(cart);
@@ -326,37 +335,64 @@ const getOrderPlacedPage = async (req,res)=>{
 }
 
 const getSortedPage = async (req, res) => {
-    const { sortBy } = req.query;
+    try {
+        const { sortBy } = req.query;
+        const page = parseInt(req.query.page) || 1;  // Get page from query or default to 1
+        const limit = 15;  // Products per page
+        
+        let sortCriteria;
+        switch (sortBy) {
+            case 'mostPopular':
+                sortCriteria = { popularity: -1 };
+                break;
+            case 'priceLowHigh':
+                sortCriteria = { salePrice: 1 };
+                break;
+            case 'priceHighLow':
+                sortCriteria = { salePrice: -1 };
+                break;
+            case 'newArrivals':
+                sortCriteria = { createdAt: -1 }; 
+                break;
+            case 'avgRating':
+                sortCriteria = { avgRating: -1 }; 
+                break;
+            case 'aToZ':
+                sortCriteria = { productName: 1 };
+                break;
+            case 'zToA':
+                sortCriteria = { productName: -1 };
+                break;
+            default:
+                sortCriteria = {}; 
+        }
 
-    let sortCriteria;
-    switch (sortBy) {
-        case 'mostPopular':
-            sortCriteria = { popularity: -1 };
-            break;
-        case 'priceLowHigh':
-            sortCriteria = { salePrice: 1 };
-            break;
-        case 'priceHighLow':
-            sortCriteria = { salePrice: -1 };
-            break;
-        case 'newArrivals':
-            sortCriteria = { createdAt: -1 }; 
-            break;
-        case 'avgRating':
-            sortCriteria = { avgRating: -1 }; 
-            break;
-        case 'aToZ':
-            sortCriteria = { productName: 1 };
-            break;
-        case 'zToA':
-            sortCriteria = { productName: -1 };
-            break;
-        default:
-            sortCriteria = {}; 
+        // Get total count for pagination
+        const totalProducts = await Product.countDocuments();
+        const totalPages = Math.ceil(totalProducts / limit);
+        const skip = (page - 1) * limit;
+
+        // Get products and categories
+        const [products, categories] = await Promise.all([
+            Product.find()
+                   .populate('category')
+                   .sort(sortCriteria)
+                   .skip(skip)
+                   .limit(limit),
+            Category.find()
+        ]);
+
+        res.render('shop', { 
+            products,
+            category: categories,
+            totalPages,      
+            currentPage: page
+        });
+
+    } catch (error) {
+        console.error('Error in getSortedPage:', error);
+        res.status(500).render('error', { message: 'Internal server error' });
     }
-
-    const products = await Product.find().sort(sortCriteria); 
-    res.render('shop', { products });
 };
 
 const updateQuantity =  async (req, res) => {
@@ -420,6 +456,7 @@ const orderProductDetails = async (req, res) => {
         // Render the details with fields from the new schema
         res.render('order-details', {
             order: {
+                id:order._id,
                 orderId: order.orderId,
                 userId: order.userId,
                 orderedItems: order.orderedItems,

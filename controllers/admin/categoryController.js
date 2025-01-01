@@ -50,12 +50,13 @@ const addCategory = async (req,res)=>{
 
 const addCategoryOffer = async (req,res)=>{
     try {
-        const percentage = parseInt(req.body.percentage)
+        // const percentage = parseInt(req.body.percentage)
         
-        const categoryId = req.body.categoryId
-        console.log(categoryId)
+        // const categoryId = req.body.categoryId
+        const{categoryId,percentage}=req.body;
+        
         const category = await Category.findById(categoryId)
-        console.log(category)
+        
         if(!category){
             return res.status(404).json({status:false,message:"Category not found"})
         }
@@ -66,9 +67,9 @@ const addCategoryOffer = async (req,res)=>{
         }
          await Category.updateOne({_id:categoryId},{$set: {categoryOffer:percentage}})
         for(const product of products){
-            product.productOffer = 0
-            product.salesPrice = product.regularPrice
-            await product.save()
+            product.productOffer = 0;
+            product.salePrice = product.regularPrice - Math.floor(product.regularPrice * (percentage / 100));
+            await product.save();
         }
         res.json({status:true})
 

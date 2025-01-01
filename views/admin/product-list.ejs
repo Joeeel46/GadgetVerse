@@ -32,7 +32,7 @@
                         <% if (data[i].productOffer) { %>
                         <%= data[i].productOffer %>%
                         <% } else { %>
-                        0%
+                            0%
                         <% } %>
                     </td>
                     <td>
@@ -93,6 +93,14 @@
             inputPlaceholder:'%',
 
         })
+        if (amount > 99) {
+            Swal.fire({
+                icon: "warning",
+                text: "Use less than 99%"
+            });
+            return;
+        }
+        
         $.ajax({
             url:"/admin/addProductOffer",
             method:'post',

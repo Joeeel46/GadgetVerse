@@ -1,5 +1,5 @@
 <%- include('../partials/user/header') %>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -29,74 +29,125 @@
                                     <tbody>
                                         <%for(let i=0;i<products.length;i++){%>
                                             <tr data-product-id="<%= products[i].productId._id %>">
-                                                <td class="image product-thumbnail"><img src="/uploads/re-image/<%=products[i].productId.productImage[0]%>" alt="<%=products[i].productId.productName%>"></td>
+                                                <td class="image product-thumbnail"><img
+                                                        src="/uploads/re-image/<%=products[i].productId.productImage[0]%>"
+                                                        alt="<%=products[i].productId.productName%>"></td>
                                                 <td class="product-des product-name">
-                                                    <h5 class="product-name"><a href="/productdetails?id=<%=products[i].productId._id%>"><%=products[i].productId.productName%></a></h5>
+                                                    <h5 class="product-name"><a
+                                                            href="/productdetails?id=<%=products[i].productId._id%>">
+                                                            <%=products[i].productId.productName%>
+                                                        </a></h5>
                                                 </td>
-                                                <td class="price" data-title="Price"><span><%=products[i].productId.salePrice.toLocaleString()%></span></td>
-                                                <%if(products[i].productId.quantity > 0){%>
+                                                <td class="price" data-title="Price"><span>₹
+                                                        <%=products[i].productId.salePrice.toLocaleString()%>
+                                                    </span>
+                                                </td>
+                                                <%if(products[i].productId.quantity> 0){%>
                                                     <td class="text-center" data-title="Stock">
                                                         <span class="color3 font-weight-bold">In Stock</span>
                                                     </td>
                                                     <td class="text-right" data-title="Cart">
-                                                        <form action="/addToCart" method="get" style="display:inline;">
-                                                            <input type="hidden" name="productId" value="<%= products[i].productId._id %>">
-                                                            <button type="submit" class="btn btn-sm btn-success">
-                                                                <i class="fi-rs-shopping-bag mr-5"></i>Add to cart
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                <%}else{%>
-                                                    <td class="text-center" data-title="Stock">
-                                                        <span class="color3 font-weight-bold">No Stock</span>
-                                                    </td>
-                                                    <td class="text-right" data-title="Cart">
-                                                        <a href="/contact-us"><button class="btn btn-sm btn-info"><i class="fi-rs-shopping-bag mr-5"></i>Contact Us</button></a>
-                                                    </td>
-                                                <%}%>
-                                                <td class="action" data-title="Remove">
-                                                    <form id="remove-form-<%= products[i].productId._id %>"
-                                                        action="/removeWishListItem" method="POST">
-                                                        <input type="hidden" name="productId"
-                                                            value="<%= products[i].productId._id %>">
-                                                        <button type="button" class="btn btn-danger"
-                                                            onclick="confirmRemove('<%= products[i].productId._id %>')">
-                                                            <i class="fi-rs-trash"></i>
+                                                        <button type="submit" class="btn btn-sm btn-success"
+                                                            onclick="addToCart('<%= products[i].productId._id %>')">
+                                                            <i class="fi-rs-shopping-bag mr-5"></i>Add to cart
                                                         </button>
-                                                    </form>
-                                                </td>
+                                                    </td>
+                                                    <%}else{%>
+                                                        <td class="text-center" data-title="Stock">
+                                                            <span class="color3 font-weight-bold">No Stock</span>
+                                                        </td>
+                                                        <td class="text-right" data-title="Cart">
+                                                            <a href="/contact-us"><button class="btn btn-sm btn-info"><i
+                                                                        class="fi-rs-shopping-bag mr-5"></i>Contact
+                                                                    Us</button></a>
+                                                        </td>
+                                                        <%}%>
+                                                            <td class="action" data-title="Remove">
+                                                                <form id="remove-form-<%= products[i].productId._id %>"
+                                                                    action="/removeWishListItem" method="POST">
+                                                                    <input type="hidden" name="productId"
+                                                                        value="<%= products[i].productId._id %>">
+                                                                    <button type="button" class="btn btn-danger"
+                                                                        onclick="confirmRemove('<%= products[i].productId._id %>')">
+                                                                        <i class="fi-rs-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </td>
                                             </tr>
-                                        <%}%>
+                                            <%}%>
                                     </tbody>
                                 </table>
-                            <%}else{%>
-                                <h2>No products yet</h2>
-                            <%}%>
+                                <%}else{%>
+                                    <h2>No products yet</h2>
+                                    <%}%>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
-<%- include('../partials/user/footer') %>
+    <%- include('../partials/user/footer') %>
 
-<script>
+        <script>
+
+            function addToCart(productId, quantity = 1) {
+                fetch(`/addToCart?productId=${productId}&quantity=${quantity}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        } else if (data.status === 400) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Oops!',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message || 'Something went wrong!',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!',
+                        });
+                    });
+            }
 
 
-        function confirmRemove(productId) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to remove this item from wishlist?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, remove it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`remove-form-${productId}`).submit();
-                }
-            });
-        }
-</script>
-
+            function confirmRemove(productId) {
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "Do you want to remove this item from wishlist?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, remove it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(`remove-form-${productId}`).submit();
+                    }
+                });
+            }
+        </script>

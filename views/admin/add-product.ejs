@@ -197,12 +197,15 @@
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 
+    
 
     function viewImage1(event) {
         document.getElementById("imgView1").src = URL.createObjectURL(event.target.files[0])
+        
     }
 
     function viewImage2(event) {
@@ -310,7 +313,7 @@
     const color = document.getElementsByName('color')[0].value;
     const category = document.getElementsByName('category')[0].value;
     const images = document.getElementById('input1');
-    const quantity = document.getElementsByName('quantity')[0].value; // Ensure the correct field is selected
+    const quantity = document.getElementsByName('quantity')[0].value; 
     let isValid = true;
 
     // Validate each field
@@ -339,10 +342,6 @@
         isValid = false;
     }
 
-    if (parseFloat(price) <= parseFloat(saleprice)) {
-        displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
-        isValid = false;
-    }
 
     if (color.trim() === "") {
         displayErrorMessage('color-error', 'Please enter a color.');

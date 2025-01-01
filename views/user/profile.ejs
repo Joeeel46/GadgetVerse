@@ -318,10 +318,10 @@
                                 <td><%=order.createdOn.toLocaleDateString()%></td>
                                 <td><%=order.finalAmount%></td>
                                 <td><a href="/orderDetails?id=<%=order.orderId%>" class="btn-small d-block">View</a></td>
-                                <td><%if(order.status !== 'Cancelled' && order.status !== 'Delivered' && order.status !== 'Return Request' && order.status !== 'Returned'){%>
-                                  <a href="/cancelOrder?id=<%=order._id%>">Cancel</a>
-                                  <% }else if(order.status === 'Delivered'){%>
-                                    <a href="">Return</a>
+                                <td><%if(order.status !== 'Cancelled' && order.status !== 'Delivered' && order.status !== 'Return Requested' && order.status !== 'Returned'){%>
+                                  <a onclick="confirmCancel('<%= order._id %>')">Cancel</a>
+                                  <% }else if(order.status === 'Delivered' || order.status === 'Return Requested'){%>
+                                    <a onclick="returnProduct('<%= order._id %>')">Return</a>
                                     <% } %>
                                 </td>
                               </tr>
@@ -375,17 +375,30 @@
                        <table class="table">
                          <thead>
                            <tr>
-                             <th>Date</th>
-                             <th>Status</th>
-                             <th>Amount</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Transaction Id</th>
+                            <th>Status</th>
                            </tr>
                          </thead>
                          <tbody>
-                           <tr>
-                             <td></td>
-                             <td></td>
-                             <td></td>
-                           </tr>
+                          <% if (wallet && wallet.transactions.length > 0) { %>
+                              <% wallet.transactions.forEach(transaction => { %>
+                                  <tr>
+                                      <td><%= new Date(transaction.date).toLocaleDateString() %></td>
+                                      <td><%= transaction.type %></td>
+                                      <td>₹<%= transaction.amount %></td>
+                                      <td><%= transaction._id || '-' %></td>
+                                      <td><%= transaction.status %></td>
+                                  </tr>
+                              <% }); %>
+                          <% } else { %>
+                              <tr>
+                                  <td colspan="6" class="text-center">No transactions available</td>
+                              </tr>
+                          <% } %>
+                      </tbody>
                          </tbody>
                        </table>
                      </div>
@@ -411,11 +424,64 @@
    </div>
  </section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+  function returnProduct(orderId) {
+      Swal.fire({
+          title: "Are you sure?",
+          text: "Do you want to return this product?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, return it!",
+          cancelButtonText: "No, keep it",
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6"
+      }).then((result) => {
+          if (result.isConfirmed) {
+              // Send a request to update the order
+              fetch(`/returnProduct?id=${orderId}`, {
+                  method: "POST",
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      Swal.fire("Returned!", "The product has been returned successfully.", "success");
+                      // Optionally, reload the page to reflect changes
+                      window.location.reload();
+                  } else {
+                      Swal.fire("Error", data.message, "error");
+                  }
+              })
+              .catch(error => {
+                  console.error("Error:", error);
+                  Swal.fire("Error", "Something went wrong. Please try again.", "error");
+              });
+          }
+      });
+  }
+
+  function confirmCancel(orderId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you really want to cancel this order?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No, keep it",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Redirect to the cancellation endpoint or perform an AJAX call
+            window.location.href = `/cancelOrder?id=${orderId}`;
+        }
+    });
+}
 
   // Update Profile AJAX Request
   // Update Profile AJAX Request
-document.getElementById('updateProfileBtn').addEventListener('click', () => {
+  document.getElementById('updateProfileBtn').addEventListener('click', () => {
   const userName = document.getElementById('userName').value;
   const userPhone = document.getElementById('userPhone').value;
   const userEmail = document.getElementById('userEmail').value;
@@ -505,6 +571,32 @@ document.getElementById('changePasswordBtn').addEventListener('click', () => {
   $('#changePasswordModal').modal('show');
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    const navLinks = document.querySelectorAll(".dashboard-menu .nav-link");
+    const tabContents = document.querySelectorAll(".tab-pane");
+
+    const activeTabId = localStorage.getItem("activeDashboardTab");
+    if (activeTabId) {
+        navLinks.forEach(link => link.classList.remove("active"));
+        tabContents.forEach(content => content.classList.remove("active", "show"));
+
+        
+        const activeTab = document.getElementById(activeTabId);
+        const activeTabContent = document.querySelector(activeTab.getAttribute("href"));
+
+        if (activeTab && activeTabContent) {
+            activeTab.classList.add("active");
+            activeTabContent.classList.add("active", "show");
+        }
+    }
+
+
+    navLinks.forEach(link => {
+        link.addEventListener("click", function () {
+            localStorage.setItem("activeDashboardTab", this.id);
+        });
+    });
+});
 
 </script>
 

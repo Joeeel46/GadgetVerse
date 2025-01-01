@@ -239,6 +239,12 @@
                                     <span class="coupon-detail-label">Expiration</span>
                                     <span class="coupon-detail-value"><%= coupon.expiredOn.toLocaleDateString() %></span>
                                 </div>
+                                <div class="coupon-detail">
+                                    <span class="coupon-detail-label">Max Discount</span>
+                                    <span class="coupon-detail-value">
+                                        <%= coupon.maxDiscount ? `₹${coupon.maxDiscount.toLocaleString()}` : 'No Limit' %>
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

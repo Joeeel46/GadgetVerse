@@ -68,30 +68,28 @@ const getForgotPassPage = async (req,res)=>{
 
 const forgotEmailValid = async (req,res)=>{
     try {
-        const {email} = req.body
+        const { email } = req.body;
         if (!email) {
-            return res.render("forgot-password", { message: "Please provide an email address." });
+            return res.status(400).json({ success: false, message: "Please provide an existing email address." });
         }
-        const findUser = await User.findOne({email:email})
-        if(findUser){
-            const otp = generateOtp()
-            const emailSent = await sendVerificationEmail(email,otp)
-            if(emailSent){
-                req.session.userOtp = otp
-                req.session.email = email
-                res.render("forgot-password-otp")
-                console.log("OTP: ",otp)
-            }else{
-                res.json({success:false,message:"Failed to send OTP. Please try again"})
+        const findUser = await User.findOne({ email: email });
+        if (findUser) {
+            const otp = generateOtp();
+            const emailSent = await sendVerificationEmail(email, otp);
+            if (emailSent) {
+                req.session.userOtp = otp;
+                req.session.email = email;
+                res.json({ success: true, redirect: "/forgot-password-otp", otp: otp });
+                console.log("OTP: ", otp);
+            } else {
+                res.status(500).json({ success: false, message: "Failed to send OTP. Please try again." });
             }
-        }else{
-            res.render("forgot-password",{
-                message:"User with this email does not exist"
-            })
+        } else {
+            res.status(404).json({ success: false, message: "User with this email does not exist." });
         }
     } catch (error) {
-        console.error("Error in forgotEmailValid:", error); // Added error logging
-        res.redirect("/pageNotFound");
+        console.error("Error in forgotEmailValid:", error);
+        res.status(500).json({ success: false, message: "An error occurred. Please try again." });
     }
 }
 
@@ -159,7 +157,7 @@ const userProfile = async (req,res)=>{
         const userId = req.session.user
         const userData = await User.findById(userId)
         const addressData = await Address.findOne({userId:userId})
-        const orders = await Order.find({userId})
+        const orders = await Order.find({userId}).sort({ createdOn: -1 });
         const wallet = await Wallet.findOne({userId:userId});
         res.render('profile',{
             user:userData,

@@ -1,56 +1,55 @@
 <%- include("../../views/partials/user/header") %>
     <style>
-       .qty-container {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        width: 120px;
-        height: 40px;
-        overflow: hidden;
-    }
+        .qty-container {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 120px;
+            height: 40px;
+            overflow: hidden;
+        }
 
-    .qty-btn {
-        background: none;
-        border: none;
-        width: 30px;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
+        .qty-btn {
+            background: none;
+            border: none;
+            width: 30px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-    .qty-btn:hover {
-        background-color: #f0f0f0;
-    }
+        .qty-btn:hover {
+            background-color: #f0f0f0;
+        }
 
-    #quantity {
-        width: 60px;
-        text-align: center;
-        border: none;
-        font-size: 16px;
-        appearance: textfield;
-        -moz-appearance: textfield;
-        margin: 0;
-        padding: 0;
-    }
+        #quantity {
+            width: 60px;
+            text-align: center;
+            border: none;
+            font-size: 16px;
+            appearance: textfield;
+            -moz-appearance: textfield;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* Hide number input spinners */
-    #quantity::-webkit-outer-spin-button,
-    #quantity::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
+        /* Hide number input spinners */
+        #quantity::-webkit-outer-spin-button,
+        #quantity::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
                 <div class="breadcrumb">
-                    <a href="#" rel="nofollow">Home</a>
-                    <span></span> Fashion
-                    <span></span>product detail page
+                    <a href="/shop" >Shop</a>
+                    <span></span>Product Details
                 </div>
             </div>
         </div>
@@ -115,19 +114,22 @@
                                         <div class="clearfix product-price-cover">
                                             <div class="product-price primary-color float-left">
                                                 <ins><span class="text-brand">
-                                                        <%=product.salePrice%>
+                                                        ₹<%=product.salePrice%>
                                                     </span></ins>
                                                 <ins><span class="old-price font-md ml-15">
-                                                        <%=product.regularPrice%>
+                                                        <%if(categoryOffer || productOffer){%>
+                                                            ₹<%=product.regularPrice%>
+                                                                <%}%>
                                                     </span></ins>
                                                 <span class="save-price  font-md color3 ml-15">
 
-                                                    <%if(!product.productOffer){%>
-                                                        No Offers
-                                                        <%}else{%>
-                                                            <%=product.productOffer%> % Offer
-                                                                <%}%>
-
+                                                    <%if(categoryOffer){%>
+                                                        <%=categoryOffer%> % Offer
+                                                            <%}else if(productOffer){%>
+                                                                <%=productOffer%> % Offer
+                                                                    <%}else{%>
+                                                                        No Offers
+                                                                        <% } %>
                                                 </span>
                                             </div>
                                         </div>
@@ -150,31 +152,30 @@
 
                                         <div class="bt-1 border-color-1 mt-30 mb-30"></div>
                                         <div class="detail-extralink">
-                                            <form action="/addToCart" method="get"
-                                                style="display: inline; " onsubmit="syncQuantity()">
+                                          
                                                 <input type="hidden" name="productId" value="<%= product._id %>">
                                                 <input type="hidden" name="quantity" id="cart-quantity" value="1">
-                                                <button type="submit" class="btn btn-success">Add to cart</button>
-                                            </form>
+                                                <button type="submit" class="btn btn-success" onclick="addToCart('<%= product._id %>')">Add to cart</button>
+                                          
+
                                             <div class="detail-qty border radius" style="width: 80px; padding: 0px;">
                                                 <a href="#" class="qty-down" onclick="decreaseQuantity(event)"><i
                                                         class="fi-rs-angle-small-down"></i></a>
                                                 <input type="number" class="qty-val" id="quantity" value="1" min="1"
                                                     max="5" readonly>
-                                                <a href="#" class="qty-up" onclick="increaseQuantity(event, 5, '<%=quantity%>')"><i
+                                                <a href="#" class="qty-up"
+                                                    onclick="increaseQuantity(event, 5, '<%=quantity%>')"><i
                                                         class="fi-rs-angle-small-up"></i></a>
                                             </div>
-                                            <a aria-label="Buy Now" class="action-btn hover-up"
-                                                href="/checkout?productId=<%=product._id%>">
-                                                <button type="submit" class="button button-add-to-cart" onclick="">Buy
-                                                    Now</button>
-                                            </a>
+                                            <button type="button" class="button button-buy-now"
+                                                onclick="redirectToCheckout('<%= product._id %>')">Buy
+                                                Now</button>
 
                                         </div>
                                         <ul class="product-meta font-xs color-grey mt-50">
-                                            <li class="mb-5">Stock Code: <a href="#">FWM15VKT</a></li>
-                                            <li class="mb-5">Tags: <a href="#" rel="tag"></a> <a href="#" rel="tag">
-                                                    <%=category.name%>
+                                            
+                                            <li class="mb-5">Category: <a href="#" rel="tag"></a> <a href="#" rel="tag">
+                                                   <%= category %>
                                                 </a> <a href="#" rel="tag"></a> </li>
                                             <li>Availability:<span class="in-stock text-success ml-5">
                                                     <%=quantity%> Items in Stock
@@ -191,6 +192,52 @@
         </section>
     </main>
     <script>
+        function addToCart(productId) {
+            console.log(productId)
+            const quantity = document.getElementById('quantity').value || 1
+            fetch(`/addToCart?productId=${productId}&quantity=${quantity}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else if (data.status === 400) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Oops!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }else{
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message || 'Something went wrong!',
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                    });
+                });
+        }
+
         function decreaseQuantity(event) {
             event.preventDefault();
 
@@ -228,32 +275,12 @@
 
             quantityElement.value = currentQuantity + 1;
         }
-        // Function to add product to cart
-        function addToCart() {
-            if (currentQuantity <= availableQuantity) {
-                availableQuantity -= currentQuantity; // Reduce available stock
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Added to Cart',
-                    text: `You have added ${currentQuantity} item(s) to your cart. Remaining stock: ${availableQuantity}`,
-                });
 
-                // Reset quantity to 1 after adding to cart
-                currentQuantity = 1;
-                document.getElementById('quantity').innerText = currentQuantity;
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Insufficient Stock',
-                    text: 'Not enough stock available for the quantity you selected.',
-                });
-            }
+        function redirectToCheckout(productId) {
+            const qtyValue = document.getElementById('quantity').value;
+            window.location.href = `/checkout?productId=${productId}&quantity=${qtyValue}`;
         }
 
-        function syncQuantity() {
-            const qtyVal = document.getElementById('quantity').value; 
-            document.getElementById('cart-quantity').value = qtyVal;
-        }
 
     </script>
     <%- include("../../views/partials/user/footer") %>

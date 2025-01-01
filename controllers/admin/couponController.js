@@ -29,10 +29,11 @@ const getCouponPage = async (req,res) => {
 const addCoupon = async (req, res) => {
     try {
         console.log(req.body);
-        let { couponCode, createdOn, expireOn, discountPercentage, minimumPrice } = req.body;
+        let { couponCode, createdOn, expireOn, discountPercentage, minimumPrice, maxDiscount  } = req.body;
         let percentage = Number(discountPercentage);
         let miniPrice = Number(minimumPrice);
-        console.log(expireOn)
+        let maxPrice = Number(maxDiscount);
+        
 
         const existingCoupon = await Coupon.findOne({ couponCode });
         if (existingCoupon) {
@@ -50,6 +51,7 @@ const addCoupon = async (req, res) => {
             expiredOn: endDate,
             offerPercentage:percentage,
             minimumPrice:miniPrice,
+            maxDiscount:maxPrice,
             isList: true
         });
         const couponSave =await newCoupon.save();

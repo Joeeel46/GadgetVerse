@@ -28,6 +28,10 @@ const addToWishlist = async (req,res)=>{
         const wishlist = await Wishlist.findOne({userId})
 
         if(wishlist){
+            const productExists = wishlist.products.some(item => item.productId.toString() === productId.toString());
+            if (productExists) {
+                return res.json({ message: "Product Already Exist in Wishlist!" });
+            }
             wishlist.products.push({productId,added_at: new Date()})
             await wishlist.save()
         }else{

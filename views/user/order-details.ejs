@@ -41,8 +41,19 @@
                         <br>
                         <p><strong>Order Date:</strong> <%= new Date(order.createdOn).toLocaleDateString() %></p>
                         <br>
-                        <p><strong>Status:</strong> <%= order.status || 'N/A' %></p>
+                        <p><strong>Order Status:</strong> <%=order.status%></p>
                         <br>
+                        <% if(order.paymentStatus === 'Failed' && order.paymentMethod === 'online'){ %>
+                            <p><strong>Payment Status:</strong> <span class="text-danger">Payment Failed</span></p>
+                        <% }else if(order.paymentStatus === 'Completed' && order.paymentMethod === 'online'){ %>
+                            <p><strong>Payment Status:</strong> <span style="color: rgb(5, 182, 5);">Payment Completed</span></p>
+                        <% } %>
+                        <br>
+                        <% if(order.paymentStatus === 'Failed' && order.paymentMethod === 'online'){ %>
+                            <div class="text-start mt-30">
+                                <button class="btn" onclick="retryPayment('<%=order.orderId%>', '<%=order.finalAmount%>','<%=order.id%>')"><i class="mr-10"></i>Retry Payment</button>
+                            </div>
+                        <% } %>
                         <hr>
 
                         <!-- Item List -->
@@ -53,6 +64,7 @@
                                         <th scope="col">Image</th>
                                         <th scope="col">Name</th>
                                         <th scope="col">Price</th>
+                                        <th scope="col">Coupon</th>
                                         <th scope="col">Quantity</th>
                                         <th scope="col">Subtotal</th>
                                     </tr>
@@ -77,13 +89,16 @@
                                                 </h5>
                                             </td>
                                             <td class="price">
-                                                <span>₹ <%= item.price ? item.price.toLocaleString() : 'N/A' %></span>
+                                                <span>₹ <%= item.product.salePrice ? item.product.salePrice.toLocaleString() : 'N/A' %></span>
+                                            </td>
+                                            <td class="coupon">
+                                                <span><%= order.couponCode || 'N/A' %></span>
                                             </td>
                                             <td class="text-center">
-                                                <span><%= item.quantity || 'N/A' %></span>
+                                                <span>x<%= item.quantity || 1 %></span>
                                             </td>
                                             <td class="text-right">
-                                                <span>₹ <%= (item.price * item.quantity).toLocaleString() %></span>
+                                                <span>₹ <%= (item.product.salePrice * item.quantity).toLocaleString() %></span>
                                             </td>
                                         </tr>
                                     <% }); %>
@@ -107,15 +122,104 @@
                             </div>
                         </div>
 
+                        <div class="text-end mt-30">
+                            <%if(order.status == "Delivered"){%>
+                                <a href="/downloadInvoice?id=<%= order.orderId %>" class="btn btn-primary">
+                                    Download Invoice
+                                </a>
+                            <% } %>
+                        </div>
+
                         <!-- Back to Orders Button -->
                         <div class="text-end mt-30">
-                            <a href="/orders" class="btn"><i class="fi-rs-arrow-left mr-10"></i> Back to Orders</a>
+                            <a href="/userProfile" class="btn"><i class="fi-rs-arrow-left mr-10"></i> Back to Orders</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+
+    async function retryPayment(orderId, amount,id) {
+        try {
+            // Fetch the Razorpay order details
+            const response = await fetch('/retry-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderId, amount }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                const options = {
+                    key: result.key, 
+                    amount: result.amount, 
+                    currency: result.currency,
+                    order_id: result.razorpayOrderId, 
+                    name: "Gadget Verse",
+                    description: "Order Payment",
+                    handler: async function (response) {
+                        console.log(response)
+
+
+                        const paymentResponse = await fetch('/repayment-status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                paymentId: response.razorpay_payment_id,
+                                orderId: id,
+                                razorpayId: response.razorpay_order_id,
+                                signature: response.razorpay_signature,
+                            }),
+                        });
+                        const paymentResult = await paymentResponse.json();
+                        console.log(paymentResponse)
+
+                        if (paymentResult.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Payment Successful',
+                                text: 'Your payment has been processed successfully.',
+                                confirmButtonText: 'Okay',
+                                confirmButtonColor: '#007bff',
+                            }).then(() => {
+                                window.location.href = `/orderPlaced/?orderId=${orderId}`;
+                            })
+                            
+                        } else {
+                            alert('Failed to update payment status. Please contact support.');
+                        }
+                    },
+                    prefill: {
+                        name: 'name',
+                        email: 'email',
+                        contact: 'phone',
+                    },
+                    theme: {
+                        color: "#3399cc",
+                    },
+                };
+
+                // Open Razorpay payment form
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            } else {
+                alert(result.message || 'Failed to retry payment. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error retrying payment:', error);
+            alert('An unexpected error occurred. Please try again.');
+        }
+    }
+
+    </script>
 
 </main>
 

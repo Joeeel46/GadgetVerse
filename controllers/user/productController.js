@@ -9,19 +9,21 @@ const productDetails = async (req,res)=>{
         const userId = req.session.user
         const userData = await User.findById(userId)
         const productId = req.query.id
-        const product = await Product.findById(productId).populate('category','name')
-        console.log("pro",product)
+        const product = await Product.findById(productId).populate('category')
+        
         const findCategory = product.category.name;
-        console.log("cat",findCategory)
-        const categoryOffer = findCategory ?.categoryOffer || 0
+       
+        const categoryOffer = product.category.categoryOffer || 0
         const productOffer = product.productOffer || 0 
-        const totalOffer = categoryOffer + productOffer
+        console.log(categoryOffer)
+        
         res.render("product-details",{
             user:userData,
             product:product,
             quantity:product.quantity,
-            totalOffer:totalOffer,
-            category:findCategory
+            productOffer,
+            category:findCategory,
+            categoryOffer
         })
 
     } catch (error) {

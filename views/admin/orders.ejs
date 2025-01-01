@@ -169,26 +169,42 @@
                 options.forEach(option => option.disabled = false);
 
                 
-                if (selectedStatus === 'Return Requested') {
+                if (selectedStatus === 'Processing') {
                     
                     options.forEach(option => {
-                        if (option.value !== 'Cancelled' && option.value !== 'Returned') {
+                        if (option.value === 'Pending') {
                             option.disabled = true;
                         }
                     });
-                } else if (selectedStatus === 'Delivered') {
+                } else if (selectedStatus === 'Shipped') {
                    
                     options.forEach(option => {
-                        if (option.value !== 'Cancelled' && option.value !== 'Return Requested' && option.value !== 'Returned') {
+                        if (option.value === 'Processing' && option.value === 'Pending') {
                             option.disabled = true;
                         }
                     });
                 } else if (selectedStatus === 'Cancelled') {
                    
                     options.forEach(option => option.disabled = true);
-                } else if (selectedStatus === 'Returned') {
+
+                } else if (selectedStatus === 'Delivered') {
                   
-                    options.forEach(option => option.disabled = true);
+                    options.forEach(option => {
+                        if(option.value !== 'Return Requested' && option.value !== 'Returned'){
+                            option.disabled = true
+                        }
+                    });
+                }else if (selectedStatus === 'Return Requested') {
+                  
+                    options.forEach(option => {
+                        if(option.value !== 'Returned'){
+                            option.disabled = true
+                        }
+                    });
+                }else if (selectedStatus === 'Returned') {
+                   
+                   options.forEach(option => option.disabled = true);
+
                 }
             }
 
