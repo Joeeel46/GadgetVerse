@@ -2,6 +2,7 @@ const Wishlist = require("../../models/wishlistSchema");
 const Product = require("../../models/productSchema");
 const Cart = require("../../models/cartSchema");
 const { response } = require("express");
+const statusCodes = require("../../utils/statusCodes")
 
 const getWishlist = async (req,res)=>{
     try {
@@ -14,15 +15,15 @@ const getWishlist = async (req,res)=>{
         res.render('wishlist',{products:wishlist.products})
     } catch (error) {
         console.log(error)
-        res.status(500).json({error: 'Internal server error'})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error: 'Internal server error'})
     }
 }
 
 const addToWishlist = async (req,res)=>{
     const userId = req.session.user
     const productId = req.body.product_id
-    console.log(userId)
-    console.log(productId)
+    // console.log(userId)
+    // console.log(productId)
 
    try {
         const wishlist = await Wishlist.findOne({userId})
@@ -41,10 +42,10 @@ const addToWishlist = async (req,res)=>{
             })
             await newWishlist.save()
         }
-        res.status(200).json({message:'Product added to wishlist!'})
+        res.status(statusCodes.OK).json({message:'Product added to wishlist!'})
     } catch (error) {
         console.log(error)
-        res.status(500).json({error: 'Internal server error'})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error: 'Internal server error'})
     }
 }
 
@@ -72,3 +73,6 @@ module.exports = {
     getWishlist,
     removeWishlistItem
 }
+
+
+

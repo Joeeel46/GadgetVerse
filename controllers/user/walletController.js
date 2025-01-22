@@ -1,36 +1,113 @@
 const Order = require('../../models/orderSchema.js'); 
 const Product = require('../../models/productSchema.js'); 
 const Wallet = require('../../models/walletSchema.js'); 
+const User = require("../../models/userSchema")
+const Razorpay = require('razorpay');
+require("dotenv").config();
+const statusCodes = require("../../utils/statusCodes")
+
+const razorpayInstance  = new Razorpay({
+    key_id: "rzp_test_pgn7NyAMZL75UQ",
+    key_secret: "a4yLpQ9zDLQ9RbCGwTFHgIUq"
+});
+
+const walletPayment = async (req,res)=>{
+    const {amount} = req.body
+
+    if(!amount || amount <= 0){
+        return res.status(statusCodes.BAD_REQUEST).json({success:false,message:'Invalid amount'})
+    }
 
 
-const returnItem = async (req, res) => {
-    const orderId = req.query.id; // Order ID from the request query
 
-    try {
-        // 1. Find the order
-        const order = await Order.findById(orderId).populate('orderedItems.product');
-        if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found." });
+    try{
+        const order = await razorpayInstance.orders.create({
+            amount: amount * 100,
+            currency: 'INR',
+            payment_capture:1,
+        })
+
+        res.json({success:true,orderId:order.id})
+
+    }catch(error){
+        console.log("Error creating Razorpay order:",error)
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({success:false,message:"Internal server error"})
+    }
+
+}
+
+const updateWallet = async (req,res)=>{
+    const {paymentId , razorpayId, signature ,amount } = req.body
+    const userId = req.session.user
+    
+    try{
+        const crypto = require('crypto')
+        const secret = "a4yLpQ9zDLQ9RbCGwTFHgIUq"
+        const hmac = crypto.createHmac('sha256',secret)
+
+        hmac.update(`${razorpayId}|${paymentId}`)
+        const generatedSignature = hmac.digest('hex')
+
+        if(generatedSignature !== signature){
+            throw new Error("Invalid Razorpay signauture")
         }
 
-        // 2. Update order status to "Returned"
+        let wallet = await Wallet.findOne({userId})
+
+        if(!wallet){
+            wallet = new Wallet({
+                userId,
+                balance : 0,
+                transactions: []
+            })
+        }
+        
+        wallet.balance += Number(amount)
+
+        wallet.transactions.push({
+            type: 'Deposit',
+            amount: Number(amount),
+            status: 'Completed',
+            description: 'Wallet Top-Up'
+        })
+
+        await wallet.save()
+
+        res.status(statusCodes.OK).json({status:200 ,success: true, message: 'Wallet updated successfully'})
+    }catch (error) {
+        console.error('Error updating wallet:', error);
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to update wallet' });
+    }
+}
+
+const returnItem = async (req, res) => {
+    const orderId = req.query.id; 
+
+    try {
+        
+        const order = await Order.findById(orderId).populate('orderedItems.product');
+        if (!order) {
+            return res.status(statusCodes.NOT_FOUND).json({ success: false, message: "Order not found." });
+        }
+
+       
         order.status = "Returned";
         await order.save();
 
-        // 3. Update stock for each product in the orderedItems
+        
         for (let item of order.orderedItems) {
             const product = await Product.findById(item.product._id);
             if (product) {
-                product.quantity += item.quantity; // Increase product stock
+                product.quantity += item.quantity; 
                 await product.save();
             }
         }
 
-        // 4. Handle wallet refund
+        
         let wallet = await Wallet.findOne({ userId: order.userId });
 
         if (!wallet) {
-            // If no wallet exists, create one
+            
             wallet = new Wallet({
                 userId: order.userId,
                 balance: 0,
@@ -38,8 +115,8 @@ const returnItem = async (req, res) => {
             });
         }
 
-        // Add refund transaction
-        const refundAmount = order.finalAmount; // Refund the final amount
+        
+        const refundAmount = order.finalAmount; 
         wallet.balance += refundAmount;
 
         wallet.transactions.push({
@@ -52,20 +129,21 @@ const returnItem = async (req, res) => {
 
         await wallet.save();
 
-        // 5. Send success response
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             success: true,
             message: "Product returned successfully, stock updated, and amount refunded to wallet.",
             walletBalance: wallet.balance
         });
     } catch (error) {
         console.error("Error in returnProduct route:", error);
-        res.status(500).json({ success: false, message: "Internal server error." });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error." });
     }
 };
 
 
 
 module.exports = {
-    returnItem
+    returnItem,
+    walletPayment,
+    updateWallet
 }

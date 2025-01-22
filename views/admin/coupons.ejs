@@ -15,10 +15,11 @@
                         <form id="couponForm">
                             <div class="mb-4">
                                 <label for="couponCode" class="form-label">Coupon Code</label>
-                                <input type="text" placeholder="Type here" class="form-control" id="couponCode" name="couponCode" />
+                                <input type="text" placeholder="Type here" class="form-control" id="couponCode"
+                                    name="couponCode" />
                                 <small id="codeError" style="color: red; display: none;">Code is required</small>
                             </div>
-                    
+
                             <div class="mb-4">
                                 <label class="form-label">Discount Percentage (%)</label>
                                 <input type="number" placeholder="Enter discount percentage" class="form-control"
@@ -26,37 +27,41 @@
                                 <small id="discountError" style="color: red; display: none;">Discount percentage must be
                                     between 1 and 100</small>
                             </div>
-                    
+
                             <div class="mb-4">
                                 <label class="form-label">Minimum Price</label>
                                 <input type="number" placeholder="Enter minimum price" class="form-control"
                                     id="minimumPrice" name="minimumPrice" />
-                                <small id="minimumError" style="color: red; display: none;">Minimum price can't be empty</small>
+                                <small id="minimumError" style="color: red; display: none;">Minimum price can't be
+                                    empty</small>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Maximum Discount Amount</label>
                                 <input type="number" placeholder="Enter Maximum Amount" class="form-control"
                                     id='maxdiscount' name="maxdiscount" />
-                                <small id="maximumError" style="color: red; display: none;">Maximum price can't be empty</small>
+                                <small id="maximumError" style="color: red; display: none;">Maximum price can't be
+                                    empty</small>
                             </div>
-                            
+
                             <div class="mb-4">
                                 <label class="form-label">Created On</label>
                                 <input type="date" class="form-control" id="createdDate" name="createdOn" />
-                                <small id="createdError" style="color: red; display: none;">Created date is required</small>
+                                <small id="createdError" style="color: red; display: none;">Created date is
+                                    required</small>
                             </div>
-                    
+
                             <div class="mb-4">
                                 <label class="form-label">End Date</label>
                                 <input type="date" class="form-control" id="endDate" name="expireOn" />
                                 <small id="endDateError" style="color: red; display: none;">End date is required</small>
                             </div>
                             <div class="d-grid">
-                                <button class="btn btn-primary" type="button" id="createCouponBtn">Create Coupon</button>
+                                <button class="btn btn-primary" type="button" id="createCouponBtn">Create
+                                    Coupon</button>
                             </div>
                         </form>
-                    </div>                    
+                    </div>
                     <div class="col-md-9">
                         <div>
                             <%if(coupons.length>0){%>
@@ -83,18 +88,19 @@
                                                     <%=coupons[i].maxDiscount%>
                                                 </td>
                                                 <%if(coupons[i].isList){%>
-                                                <td>
-                                                    <span class="badge rounded-pill alert-success">Active</span>
-                                                </td>
-                                            <%}else{%>
-                                                <td>
-                                                    <span class="badge rounded-pill alert-danger">Inactive</span>
-                                                </td>
-                                            <%}%>
-                                                  <td>
-                                                    <button class="btn btn-danger text-white"
-                                                        onclick="confirmDelete('<%= coupons[i]._id %>')">Delete</button>
-                                                </td>
+                                                    <td>
+                                                        <span class="badge rounded-pill alert-success">Active</span>
+                                                    </td>
+                                                    <%}else{%>
+                                                        <td>
+                                                            <span
+                                                                class="badge rounded-pill alert-danger">Inactive</span>
+                                                        </td>
+                                                        <%}%>
+                                                            <td>
+                                                                <button class="btn btn-danger text-white"
+                                                                    onclick="confirmDelete('<%= coupons[i]._id %>')">Delete</button>
+                                                            </td>
                                             </tr>
                                             <%}%>
                                     </tbody>
@@ -107,44 +113,43 @@
                             <nav aria-label="Page navigation example">
                                 <ul class="pagination justify-content-start">
                                     <!-- Page Numbers -->
-                                    <% 
-                                    let startPage = Math.max(1, currentPage - 2);
-                                    let endPage = Math.min(totalPages, startPage + 4);
-                                    
-                                    if (endPage - startPage < 4) {
-                                        startPage = Math.max(1, endPage - 4);
-                                    }
-                                    
-                                    if (startPage > 1) { %>
+                                    <% let startPage=Math.max(1, currentPage - 2); let endPage=Math.min(totalPages,
+                                        startPage + 4); if (endPage - startPage < 4) { startPage=Math.max(1, endPage -
+                                        4); } if (startPage> 1) { %>
                                         <li class="page-item">
                                             <a class="page-link" href="?page=1">1</a>
                                         </li>
-                                        <% if (startPage > 2) { %>
+                                        <% if (startPage> 2) { %>
                                             <li class="page-item disabled">
                                                 <span class="page-link">...</span>
                                             </li>
-                                        <% } %>
-                                    <% } %>
-                    
-                                    <% for(let i = startPage; i <= endPage; i++) { %>
-                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                                        </li>
-                                    <% } %>
-                    
-                                    <% if (endPage < totalPages) { %>
-                                        <% if (endPage < totalPages - 1) { %>
-                                            <li class="page-item disabled">
-                                                <span class="page-link">...</span>
-                                            </li>
-                                        <% } %>
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a>
-                                        </li>
-                                    <% } %>
-                    
-                                    <!-- Next Button -->
-                                    
+                                            <% } %>
+                                                <% } %>
+
+                                                    <% for(let i=startPage; i <=endPage; i++) { %>
+                                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                                            <a class="page-link" href="?page=<%= i %>">
+                                                                <%= i %>
+                                                            </a>
+                                                        </li>
+                                                        <% } %>
+
+                                                            <% if (endPage < totalPages) { %>
+                                                                <% if (endPage < totalPages - 1) { %>
+                                                                    <li class="page-item disabled">
+                                                                        <span class="page-link">...</span>
+                                                                    </li>
+                                                                    <% } %>
+                                                                        <li class="page-item">
+                                                                            <a class="page-link"
+                                                                                href="?page=<%= totalPages %>">
+                                                                                <%= totalPages %>
+                                                                            </a>
+                                                                        </li>
+                                                                        <% } %>
+
+
+
                                 </ul>
                             </nav>
                         </div><br>
@@ -152,77 +157,38 @@
                 </div>
             </div>
         </div>
-    </section> 
+    </section>
     <br>
 
     <script>
 
         document.getElementById('createCouponBtn').addEventListener('click', async function (e) {
-        e.preventDefault();
+            e.preventDefault();
 
-        // Collect form data
-        const couponData = {
-            couponCode: document.getElementById('couponCode').value,
-            discountPercentage: document.getElementById('discountPercentage').value,
-            minimumPrice: document.getElementById('minimumPrice').value,
-            createdOn: document.getElementById('createdDate').value,
-            expireOn: document.getElementById('endDate').value,
-            maxDiscount: document.getElementById('maxdiscount').value
-        };
-
-        try {
-            const response = await fetch('/admin/save-coupon', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(couponData),
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                // SweetAlert for success
+            // Collect form data
+            const couponData = {
+                couponCode: document.getElementById('couponCode').value,
+                discountPercentage: document.getElementById('discountPercentage').value,
+                minimumPrice: document.getElementById('minimumPrice').value,
+                createdOn: document.getElementById('createdDate').value,
+                expireOn: document.getElementById('endDate').value,
+                maxDiscount: document.getElementById('maxdiscount').value
+            };
+           
+            if (couponData.discountPercentage > 99 || couponData.discountPercentage < 1) {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: result.message,
-                    confirmButtonText: 'OK',
-                }).then(() => {
-                    // Optional: Reload the page or perform another action
-                    window.location.reload()
+                    icon: "warning",
+                    text: "Use from 1% to 99%"
                 });
-            } else {
-                // SweetAlert for error
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: result.message || 'Something went wrong. Please try again.',
-                    confirmButtonText: 'OK',
-                });
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            // SweetAlert for unexpected error
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Unable to process your request. Please try again later.',
-                confirmButtonText: 'OK',
-            });
-        }
-    });
-    async function confirmDelete(couponId) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This action will delete the coupon permanently.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-    }).then(async (result) => { // Add async here because we use await inside
-        if (result.isConfirmed) {
+
             try {
-                const response = await fetch(`/admin/delete-coupon?id=${couponId}` );
+                const response = await fetch('/admin/save-coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(couponData),
+                });
 
                 const result = await response.json();
 
@@ -240,9 +206,9 @@
                 } else {
                     // SweetAlert for error
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: result.message || 'Something went wrong. Please try again.',
+                        icon: 'warning',
+                        title: 'Same Coupon Found!',
+                        text: result.message || 'Coupon code already exists!',
                         confirmButtonText: 'OK',
                     });
                 }
@@ -256,9 +222,56 @@
                     confirmButtonText: 'OK',
                 });
             }
+        });
+        async function confirmDelete(couponId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This action will delete the coupon permanently.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then(async (result) => { // Add async here because we use await inside
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/admin/delete-coupon?id=${couponId}`);
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            // SweetAlert for success
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: result.message,
+                                confirmButtonText: 'OK',
+                            }).then(() => {
+                                // Optional: Reload the page or perform another action
+                                window.location.reload()
+                            });
+                        } else {
+                            // SweetAlert for error
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: result.message || 'Something went wrong. Please try again.',
+                                confirmButtonText: 'OK',
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        // SweetAlert for unexpected error
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Unable to process your request. Please try again later.',
+                            confirmButtonText: 'OK',
+                        });
+                    }
+                }
+            });
         }
-    });
-}
 
         function validateCouponForm() {
             let isValid = true;
@@ -283,7 +296,7 @@
                 isValid = false;
             }
 
-            
+
 
             const discountValue = parseInt(discountPercentage.value, 10);
             if (!discountPercentage.value.trim() || discountValue < 1 || discountValue > 100) {
@@ -318,4 +331,4 @@
     </script>
 
 
-    <%- include('../partials/admin/footer') %> 
+    <%- include('../partials/admin/footer') %>

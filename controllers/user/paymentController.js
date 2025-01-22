@@ -1,16 +1,22 @@
 const Razorpay = require('razorpay');
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema")
+const User = require("../../models/userSchema")
 const Coupon = require('../../models/couponSchema')
 require("dotenv").config();
 const crypto = require('crypto');
 const { message } = require('statuses');
+const statusCodes = require("../../utils/statusCodes");
+const Cart = require('../../models/cartSchema');
+const status = require('statuses');
 
 
 const razorpay = new Razorpay({
     key_id: "rzp_test_pgn7NyAMZL75UQ",
     key_secret: "a4yLpQ9zDLQ9RbCGwTFHgIUq"
 });
+
+
 
 
 const createPayment = async (req, res) => {
@@ -21,7 +27,7 @@ const createPayment = async (req, res) => {
         currency: 'INR',
         receipt: 'receipt#1',
     };
-    console.log('bodyyyyy', req.body)
+    // console.log('bodyyyyy', req.body)
 
     try {
         const order = await razorpay.orders.create(options);
@@ -29,7 +35,7 @@ const createPayment = async (req, res) => {
         return res.json({ success: true, orderId: order.id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Failed to create order' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to create order' });
     }
 }
 
@@ -38,35 +44,38 @@ const createPayment = async (req, res) => {
 const updatePaymentStatus = async (req, res) => {
     try {
 
-        const { paymentId, orderId, razorpayId, signature, status } = req.body;
-        console.log(req.body)
+        const userId = req.session.user
+        const { paymentId, orderId, razorpayId, signature } = req.body;
+        // console.log(req.body)
 
         const generatedSignature = crypto.createHmac('sha256', "a4yLpQ9zDLQ9RbCGwTFHgIUq")
             .update(razorpayId + "|" + paymentId)
             .digest('hex');
-        console.log("generatedSignature:", generatedSignature, "signature:", signature)
+        // console.log("generatedSignature:", generatedSignature, "signature:", signature)
+        
         if (generatedSignature !== signature) {
             const order = await Order.findOneAndUpdate(
                 { _id: orderId },
                 { paymentStatus: 'Failed' },
                 { new: true }
             );
-            console.log("fail")
+            console.log("fail payment")
             if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found.' });
+                return res.status(statusCodes.NOT_FOUND).json({ success: false, message: 'Order not found.' });
             } else {
-                return res.status(400).json({ success: false, message: 'Payment  failed!' });
+                return res.status(statusCodes.NOT_FOUND).json({ success: false, message: 'Payment  failed!' });
             }
 
         }
 
-        
-
         const order = await Order.findOneAndUpdate(
             { _id: orderId },
-            { paymentStatus: status },
+            { paymentStatus: 'Completed' ,status: 'Processing'},
             { new: true }
         );
+        console.log('userrrrIdddd',userId)
+        await Cart.findOneAndDelete({userId})
+        
         if (order && order.orderedItems.length > 0) {
             for (const item of Object.values(order.orderedItems)) {
                 await Product.findByIdAndUpdate(
@@ -75,15 +84,15 @@ const updatePaymentStatus = async (req, res) => {
                 );
             }
         }
-        console.log("success order", order)
+        
         if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found.' });
+            return res.status(statusCodes.NOT_FOUND).json({ success: false, message: 'Order not found.' });
         }
 
-        return res.status(200).json({ success: true, orderId: order._id });
+        return res.status(statusCodes.OK).json({ success: true, orderId: order._id });
     } catch (error) {
         console.error('Error updating payment:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal Server Error' });
     }
 }
 
@@ -91,29 +100,44 @@ const updateRepaymentStatus = async (req, res) => {
     try {
 
         const { paymentId, orderId, razorpayId, signature } = req.body;
-        console.log(req.body)
+        
 
         const generatedSignature = crypto.createHmac('sha256', "a4yLpQ9zDLQ9RbCGwTFHgIUq")
             .update(razorpayId + "|" + paymentId)
             .digest('hex');
-        console.log("generatedSignature:", generatedSignature, "signature:", signature)
+        // console.log("generatedSignature:", generatedSignature, "signature:", signature)
+
+        
+
         if (generatedSignature === signature) {
             const order = await Order.findOneAndUpdate(
                 { _id: orderId },
-                { paymentStatus: 'Completed' },
+                { paymentStatus: 'Completed' ,status: 'Processing' },
                 { new: true }
             );
-            console.log("Completed")
+            
             if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found.' });
-            } else {
-                return res.status(400).json({ success: true, message: 'Payment Completed!' });
+                return res.status(statusCodes.NOT_FOUND).json({ success: false, message: 'Order not found.' });
             }
 
+            for(let item of Object.values(order.orderedItems)){
+                await Product.findByIdAndUpdate(
+                    {_id:item.product},
+                    {$inc:{quantity:-item.quantity}}
+                )
+            }
+
+            return res.status(statusCodes.BAD_REQUEST).json({ success: true, message: 'Payment Completed!' });
+            
+        }
+        if (generatedSignature !== signature) {
+            
+            return res.status(statusCodes.NOT_FOUND).json({ success: false, message: 'Payment  failed!' });
+            
         }
     } catch (error) {
         console.error('Error updating payment:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal Server Error' });
     }
 }
 
@@ -121,6 +145,22 @@ const retryPayment = async (req, res) => {
     const { orderId, amount } = req.body;
 
     try {
+
+        const orders = await Order.findOne({orderId})
+        
+        for (const item of Object.values(orders.orderedItems)) {
+            const product = await Product.findById(item.product)
+            // console.log('prodcut',product)
+            // console.log('quantity',product.quantity , item.quantity)
+            if(product.quantity < item.quantity){
+                
+                return res.status(400).json({status:400,success: false, message: `Insufficient stock for ${product.productName}, try again later!`})
+            }
+            if(product.isBlocked){
+                return res.status(400).json({status:400,success: false, message: `Product ${product.productName} is blocked!`})
+            }
+        }
+
         const options = {
             amount: amount * 100,
             currency: 'INR',
@@ -138,19 +178,23 @@ const retryPayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Error retrying payment:', error);
-        res.status(500).json({ success: false, message: 'Failed to retry payment' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to retry payment' });
     }
 };
 const ondismiss = async (req, res) => {
     try {
-        console.log("query orderId in dismisssal function", req.body)
+        
+        const userId = req.session.user
         const orderId = req.body.orderId;
+        console.log('orderId',orderId)
         const orderData = await Order.findByIdAndDelete({ _id: orderId });
+        await Coupon.findOneAndUpdate({name:orderData.couponCode},{$pull:{userId:userId}})
         console.log("order Data", orderData)
-        return res.status(200).json({ success: true })
+    
+        return res.status(statusCodes.OK).json({ success: true })
+
     } catch (error) {
         console.log(error);
-
     }
 }
 
@@ -177,17 +221,23 @@ const getCouponList = async (req, res) => {
 const applyCoupon = async (req, res) => {
     try {
         const { couponCode, totalPrice } = req.body;
+        const userId = req.session.user
+        const userData = await User.findById(userId)
+
+        if(userData.usedCoupon.includes(couponCode)){
+            return res.status(statusCodes.BAD_REQUEST).json({message:"Coupon already used before!", icon:"warning"})
+        }
 
         // Validate input
         if (!couponCode || !totalPrice) {
-            return res.status(400).json({ message: "Coupon code and total price are required" });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: "Coupon code and total price are required" });
         }
 
         // Find the coupon in the database
         const coupon = await Coupon.findOne({ name: couponCode });
 
         if (!coupon) {
-            return res.status(404).json({ message: "Invalid coupon code" });
+            return res.status(statusCodes.NOT_FOUND).json({ message: "Invalid coupon code" });
         }
 
         if (coupon) {
@@ -198,8 +248,8 @@ const applyCoupon = async (req, res) => {
                 const newTotal = totalPrice - discount;
 
                 // Send success response
-                console.log(discount, newTotal)
-                return res.status(200).json({
+                
+                return res.status(statusCodes.OK).json({
                     message: "Coupon applied successfully",
                     discountAmount: discount.toFixed(2),
                     newSubtotal: newTotal.toFixed(2),
@@ -207,17 +257,17 @@ const applyCoupon = async (req, res) => {
                 });
             } else {
                 // Total price doesn't meet minimum requirement
-                return res.status(400).json({
+                return res.status(statusCodes.BAD_REQUEST).json({
                     message: `This coupon requires a minimum purchase of ₹${coupon.minimumPrice}`,
                 });
             }
         } else {
             // Coupon not found
-            return res.status(404).json({ message: "Invalid coupon code" });
+            return res.status(statusCodes.NOT_FOUND).json({ message: "Invalid coupon code" });
         }
     } catch (error) {
         console.error("Error applying coupon:", error);
-        return res.status(500).json({
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             message: "An error occurred while applying the coupon. Please try again later.",
         });
     }
@@ -230,11 +280,9 @@ const removeCoupon = async (req, res) => {
     try {
         // Destructure and parse input values
         const { originalPrice, discountRow } = req.body;
-        // console.log(originalPrice)
-        // console.log(discountRow)
-        // Validate inputs
+        
         if (isNaN(originalPrice) || isNaN(discountRow)) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Invalid price or discount value"
             });
@@ -242,21 +290,23 @@ const removeCoupon = async (req, res) => {
 
         // Calculate subtotal
         const subtotal = parseFloat(originalPrice) + parseFloat(discountRow);
-        console.log(subtotal);
+        // console.log(subtotal);
 
-        return res.status(200).json({
+        return res.status(statusCodes.OK).json({
             success: true,
             subtotal: subtotal,
             message: "Coupon removed successfully"
         });
     } catch (error) {
         console.error('Error removing coupon:', error);
-        return res.status(500).json({
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Failed to remove coupon"
         });
     }
 };
+
+
 
 
 

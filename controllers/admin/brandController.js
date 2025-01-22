@@ -1,6 +1,9 @@
+const { name } = require("ejs")
 const Brand = require("../../models/brandSchema")
-const Product = require("../../models/productSchema")
-
+const statusCodes = require("../../utils/statusCodes")
+const Category = require("../../models/categorySchema")
+const { $lt } = require("sift")
+const { message } = require("statuses")
 
 const getBrandPage = async (req,res)=>{
     try {
@@ -24,22 +27,22 @@ const getBrandPage = async (req,res)=>{
 
 const addBrand = async (req,res)=>{
     try {
-        const brand = req.body.name
-        const findBrand = await Brand.findOne({brand})
-        console.log(brand)
-
-        if(!findBrand){
-            const image = req.file.filename
-            const newBrand = new Brand({
-                brandName: brand,
-                brandImage: image
-            })
-            await newBrand.save()
-            res.redirect("/admin/brands")
-        }
+        const brand = req.body.name;
+        const findBrand = await Brand.findOne({ brandName: brand });
     
+        if (!findBrand) {
+          const image = req.file ? req.file.filename : null; // Handle image upload
+          const newBrand = new Brand({
+            brandName: brand,
+            brandImage: image
+          });
+          await newBrand.save();
+          res.status(200).json({ message: "Brand added successfully!" });
+        } else {
+          res.status(400).json({ message: "Brand already exists" });
+        }
     } catch (error) {
-        res.redirect("/pageerror")
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -63,6 +66,8 @@ const unblockBrand = async (req,res)=>{
     }
 }
 
+
+
 const deleteBrand = async (req,res)=>{
     try {
         const {id} = req.query
@@ -73,7 +78,7 @@ const deleteBrand = async (req,res)=>{
         res.redirect("/admin/brands")
     } catch (error) {
         console.log("Error deleting brand:",error)
-        res.status(500).redirect("/pageerror")
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).redirect("/pageerror")
     }
 }
 
@@ -84,3 +89,6 @@ module.exports = {
     unblockBrand,
     deleteBrand
 }
+
+
+

@@ -298,8 +298,11 @@
                                                 </td>
                                             </tr>
                                             <%}%>
-
-                                                
+                                            <tr>
+                                                <td colspan="6" class="text-end">
+                                                    <a href="#" id="clearCartButton" class="text-muted"> <i class="fi-rs-cross-small">Clear Cart</i></a>
+                                                </td>
+                                            </tr>
                                     </tbody>
 
                                 </table>
@@ -368,7 +371,47 @@
             </div>
         </section>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script>
+
+        document.getElementById('clearCartButton').addEventListener('click',async () => {
+            try {
+                const response = await fetch('/clear', {
+                    method:'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                const result = await response.json()
+                console.log(result)
+
+                if(result.success){
+                    await Swal.fire({
+                        icon: 'success',
+                        title: result.message,
+                        showConfirmButton: true
+                        
+                    })
+                    window.location.reload()
+                }else{
+                    await Swal.fire({
+                        icon: 'error',
+                        title: result.message,
+                        showConfirmButton: true
+                        
+                    })
+
+                    
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to clear the cart',
+                    timer:2000
+                });
+            }
+        })
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('shopButton').addEventListener('click', () => {
                 window.location.href = '/shop';

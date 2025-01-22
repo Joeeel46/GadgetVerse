@@ -117,6 +117,7 @@
     "mquery": "^5.0.0",
     "ms": "^2.0.0",
     "multer": "^1.4.5-lts.1",
+    "nanoid": "^5.0.9",
     "negotiator": "^0.6.3",
     "node-addon-api": "^5.1.0",
     "node-fetch": "^2.7.0",

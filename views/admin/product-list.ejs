@@ -93,10 +93,10 @@
             inputPlaceholder:'%',
 
         })
-        if (amount > 99) {
+        if (amount > 99 || amount < 1) {
             Swal.fire({
                 icon: "warning",
-                text: "Use less than 99%"
+                text: "Use from 1% to 99%"
             });
             return;
         }

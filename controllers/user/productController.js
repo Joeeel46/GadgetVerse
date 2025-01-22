@@ -3,6 +3,7 @@ const Category = require('../../models/categorySchema')
 const User = require('../../models/userSchema')
 const Order = require('../../models/orderSchema')
 const Wallet = require('../../models/walletSchema')
+const statusCodes = require("../../utils/statusCodes")
 
 const productDetails = async (req,res)=>{
     try {
@@ -15,7 +16,8 @@ const productDetails = async (req,res)=>{
        
         const categoryOffer = product.category.categoryOffer || 0
         const productOffer = product.productOffer || 0 
-        console.log(categoryOffer)
+        // console.log('quantity',product.quantity)
+        
         
         res.render("product-details",{
             user:userData,
@@ -40,9 +42,9 @@ const cancelOrder = async (req, res) => {
       const reason = req.query.reason;
       await Order.findByIdAndUpdate(id, { $set: { status: 'Cancelled',cancellationReason:reason } });
       const order = await Order.findById(id);
-      console.log(order.paymentMethod);
+      // console.log(order.paymentMethod);
   
-      if(order.paymentMethod === "online"){
+      if(order.paymentMethod === "online"  && order.paymentStatus === 'Completed' || order.paymentMethod === 'Wallet'){
         const walletData = {
           $inc: { balance: order.totalPrice },
           $push: { 
@@ -53,8 +55,8 @@ const cancelOrder = async (req, res) => {
             }
           }
         }
-        console.log(walletData)
-    
+        // console.log(walletData)
+
         const walletUpdate = await Wallet.findOneAndUpdate(
           {userId:userId},
           walletData,
@@ -70,7 +72,7 @@ const cancelOrder = async (req, res) => {
   
     } catch (error) {
       console.error("Error loading orders page", error);
-      res.status(500).redirect('/page-not-found');
+      res.status(statusCodes.INTERNAL_SERVER_ERROR).redirect('/page-not-found');
     }
 }
 

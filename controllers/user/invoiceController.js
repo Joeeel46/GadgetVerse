@@ -2,6 +2,7 @@ const Order = require('../../models/orderSchema');
 const Address = require('../../models/addressSchema');
 const PDFDocument = require('pdfkit');
 const path = require('path');
+const statusCodes = require("../../utils/statusCodes")
 
 
 
@@ -12,7 +13,7 @@ const invoiceDownload = async (req, res) => {
 
         const order = await Order.findOne({orderId:id}).populate('orderedItems.product');
         if (!order) {
-            return res.status(404).send("Order not found");
+            return res.status(statusCodes.NOT_FOUND).send("Order not found");
         }
         
         let address = order.shippingAddress;
@@ -40,7 +41,7 @@ const invoiceDownload = async (req, res) => {
         doc.end();
     } catch (error) {
         console.error("Error generating invoice:", error);
-        res.status(500).send("Error generating invoice");
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("Error generating invoice");
     }
 };
 

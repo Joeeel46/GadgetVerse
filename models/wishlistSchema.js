@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const { message } = require("statuses")
 const {Schema} = mongoose
 
 const WishlistSchema = new Schema({

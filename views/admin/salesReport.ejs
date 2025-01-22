@@ -109,6 +109,13 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <% if (orders.length === 0) { %>
+                        <tr>
+                            <td colspan="12" style="text-align: center;">
+                                No sales data
+                            </td>
+                        </tr>
+                    <% } else { %>
                     <% let k = 1; %>
                     <% for (let i = 0; i < orders.length; i++) { %>
                         <tr>
@@ -171,6 +178,7 @@
                                 <%= orders[i].status %>
                             </td>
                         </tr>
+                    <% } %>
                     <% } %>
                 </tbody>
                 

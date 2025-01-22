@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 const env = require('dotenv').config()
 const session = require('express-session')
+const statusCodes = require("../../utils/statusCodes")
 
 function generateOtp (){
     const digits = "1234567890"
@@ -69,10 +70,14 @@ const getForgotPassPage = async (req,res)=>{
 const forgotEmailValid = async (req,res)=>{
     try {
         const { email } = req.body;
-        if (!email) {
+        // const data = JSON.parse()
+        console.log(req.body)
+        console.log(email)
+        const findUser = await User.findOne({ email: email });
+        console.log(findUser)
+        if (!findUser) {
             return res.status(400).json({ success: false, message: "Please provide an existing email address." });
         }
-        const findUser = await User.findOne({ email: email });
         if (findUser) {
             const otp = generateOtp();
             const emailSent = await sendVerificationEmail(email, otp);
@@ -82,20 +87,20 @@ const forgotEmailValid = async (req,res)=>{
                 res.json({ success: true, redirect: "/forgot-password-otp", otp: otp });
                 console.log("OTP: ", otp);
             } else {
-                res.status(500).json({ success: false, message: "Failed to send OTP. Please try again." });
+                res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to send OTP. Please try again." });
             }
         } else {
-            res.status(404).json({ success: false, message: "User with this email does not exist." });
+            res.status(statusCodes.NOT_FOUND).json({ success: false, message: "User with this email does not exist." });
         }
     } catch (error) {
         console.error("Error in forgotEmailValid:", error);
-        res.status(500).json({ success: false, message: "An error occurred. Please try again." });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "An error occurred. Please try again." });
     }
 }
 
 const verifyForgotPassOtp = async (req,res)=>{
     try {
-        console.log("HElloojsld")
+        // console.log("HElloojsld")
         const enteredOtp = req.body.otp
         console.log(enteredOtp)
         console.log(req.session.userOtp)
@@ -105,8 +110,16 @@ const verifyForgotPassOtp = async (req,res)=>{
             res.json({success:false,message:"OTP not matching"})
         }
     } catch (error) {
-        res.status(500).json({success:false,message:"An error occured please try again"})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({success:false,message:"An error occured please try again"})
 
+    }
+}
+
+const getForgotOtpPage = async (req,res)=>{
+    try {
+        res.render("forgot-password-otp")
+    } catch (error) {
+        res.redirect("/pageNotFound")
     }
 }
 
@@ -127,11 +140,11 @@ const resendOtp = async (req,res)=>{
         const emailSent = await sendVerificationEmail(email,otp)
         if(emailSent){
             console.log("Resend OTP:",otp)
-            res.status(200).json({success:true,message:"Resend OTP Successful"})
+            res.status(statusCodes.OK).json({success:true,message:"Resend OTP Successful"})
         }
     } catch (error) {
         console.error("Error in resend OTP",error)
-        res.status(500).json({success:false,message:'Internal Server Error'})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({success:false,message:'Internal Server Error'})
     }
 }
 
@@ -234,12 +247,12 @@ const editAddress = async (req,res)=>{
 const postEditAddress = async (req,res)=>{
     try {
         const data = req.body
-        console.log(data)
+        // console.log(data)
         const addressId = req.body.addressId
-        console.log(addressId)
+        // console.log(addressId)
         const user = req.session.user
         const findAddress = await Address.findOne({"address._id":addressId})
-        console.log(findAddress)
+        // console.log(findAddress)
         if(!findAddress){
             return res.redirect('/pageNotFound')
         }
@@ -274,7 +287,7 @@ const deleteAddress = async (req,res)=>{
         const addressId = req.query.id
         const findAddress = await Address.findOne({"address._id":addressId})
         if(!findAddress){
-            return res.status(404).send("Address not found")
+            return res.status(statusCodes.NOT_FOUND).send("Address not found")
         }
         await Address.updateOne({
             "address._id":addressId
@@ -308,13 +321,13 @@ const updateUserProfile = async (req, res) => {
       );
   
       if (updatedUser) {
-        return res.status(200).json({ message: "Profile updated successfully", success: true });
+        return res.status(statusCodes.OK).json({ message: "Profile updated successfully", success: true });
       } else {
-        return res.status(400).json({ message: "Failed to update profile", success: false });
+        return res.status(statusCodes.BAD_REQUEST).json({ message: "Failed to update profile", success: false });
       }
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Server error", success: false });
+      return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error", success: false });
     }
 };
 
@@ -324,12 +337,12 @@ const changeUserPassword = async (req, res) => {
       const userId = req.session.user; // Assuming `req.user` contains authenticated user info
   
       const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: "User not found", success: false });
+      if (!user) return res.status(statusCodes.NOT_FOUND).json({ message: "User not found", success: false });
   
       // Verify current password
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        return res.status(400).json({ message: "Current password is incorrect", success: false });
+        return res.status(statusCodes.BAD_REQUEST).json({ message: "Current password is incorrect", success: false });
       }
   
       // Update to new password
@@ -337,10 +350,10 @@ const changeUserPassword = async (req, res) => {
       user.password = hashedPassword;
       await user.save();
   
-      return res.status(200).json({ message: "Password updated successfully", success: true });
+      return res.status(statusCodes.OK).json({ message: "Password updated successfully", success: true });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Server error", success: false });
+      return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error", success: false });
     }
   };
   
@@ -360,5 +373,6 @@ module.exports = {
     postEditAddress,
     deleteAddress,
     updateUserProfile,
-    changeUserPassword
+    changeUserPassword,
+    getForgotOtpPage
 }

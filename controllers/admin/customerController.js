@@ -1,4 +1,4 @@
-
+const statusCodes = require("../../utils/statusCodes")
 
 const User = require("../../models/userSchema");
 
@@ -11,12 +11,12 @@ const customerInfo = async (req, res) => {
 
         let page = 1;
         if (req.query.page) {
-            page = parseInt(req.query.page, 10); // Ensure 'page' is a number
+            page = parseInt(req.query.page, 10); 
         }
 
         const limit = 3;
 
-        // Fetch user data with pagination and search functionality
+        
         const userData = await User.find({
             isAdmin: false,
             $or: [
@@ -24,11 +24,11 @@ const customerInfo = async (req, res) => {
                 { email: { $regex: ".*" + search + ".*", $options: "i" } }
             ]
         })
-        .limit(limit) // Removed the unnecessary multiplication by 1
-        .skip((page - 1) * limit) // Corrected the page calculation
+        .limit(limit) 
+        .skip((page - 1) * limit) 
         .exec();
 
-        // Count total documents matching the search criteria
+    
         const count = await User.countDocuments({
             isAdmin: false,
             $or: [
@@ -39,11 +39,11 @@ const customerInfo = async (req, res) => {
 
         const totalPages = count/limit;
 
-        // Render the customer page with user data and count
+        
         res.render("customer",{data:userData,totalPages,currentPage:page})
     } catch (error) {
         console.error("Error fetching customer info:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("Internal Server Error");
     }
 };
 

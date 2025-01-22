@@ -47,6 +47,10 @@
                             <p><strong>Payment Status:</strong> <span class="text-danger">Payment Failed</span></p>
                         <% }else if(order.paymentStatus === 'Completed' && order.paymentMethod === 'online'){ %>
                             <p><strong>Payment Status:</strong> <span style="color: rgb(5, 182, 5);">Payment Completed</span></p>
+                        <% }else if(order.paymentMethod === 'Wallet'){ %>
+                            <p><strong>Payment Status:</strong> <span style="color: rgb(5, 182, 5);">Payment Completed</span></p>
+                        <% }else{ %>
+                            <p><strong>Payment Status:</strong> <span style="color: rgb(0, 140, 215);">Payment Pending</span></p>
                         <% } %>
                         <br>
                         <% if(order.paymentStatus === 'Failed' && order.paymentMethod === 'online'){ %>
@@ -105,7 +109,6 @@
                                 </tbody>                                                  
                             </table>
                         </div>
-
                         <!-- Order Total -->
                         <div class="row mt-30">
                             <div class="col-lg-6 offset-lg-6">
@@ -155,6 +158,16 @@
 
             const result = await response.json();
 
+            if (result.status === 400) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: result.message,
+                    timer: 3000, 
+                    showConfirmButton: false, 
+                    timerProgressBar: true, 
+                })
+            } 
+
             if (response.ok && result.success) {
                 const options = {
                     key: result.key, 
@@ -162,7 +175,7 @@
                     currency: result.currency,
                     order_id: result.razorpayOrderId, 
                     name: "Gadget Verse",
-                    description: "Order Payment",
+                    description: "Order Repayment",
                     handler: async function (response) {
                         console.log(response)
 
@@ -181,6 +194,8 @@
                         });
                         const paymentResult = await paymentResponse.json();
                         console.log(paymentResponse)
+
+                        
 
                         if (paymentResult.success) {
                             Swal.fire({
@@ -210,8 +225,6 @@
                 // Open Razorpay payment form
                 const razorpay = new Razorpay(options);
                 razorpay.open();
-            } else {
-                alert(result.message || 'Failed to retry payment. Please try again.');
             }
         } catch (error) {
             console.error('Error retrying payment:', error);

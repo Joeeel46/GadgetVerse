@@ -1,4 +1,5 @@
 const Product = require('../../models/productSchema')
+const statusCodes = require("../../utils/statusCodes")
 
 const getStockPage = async (req, res) => {
     try {
@@ -18,11 +19,11 @@ const getStockPage = async (req, res) => {
         res.render("stock-managment", {
             data: products,
             currentPage: page,
-            totalPages: totalPages,
+            totalPages: totalPages
         });
     } catch (error) {
         console.error("Error in loading stock management page:", error);
-        res.status(500).send("Error in loading stock management page.");
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("Error in loading stock management page.");
     }
 };
 

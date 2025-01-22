@@ -1,5 +1,13 @@
 const Category = require("../../models/categorySchema")
 const Product = require("../../models/productSchema")
+const Brand = require("../../models/brandSchema")
+const Order = require("../../models/orderSchema")
+const Wishlist = require("../../models/wishlistSchema")
+
+
+const statusCodes = require("../../utils/statusCodes")
+const { $gt, $in } = require("sift")
+const Wallet = require("../../models/walletSchema")
 
 const categoryInfo = async (req,res)=>{
 
@@ -32,7 +40,7 @@ const addCategory = async (req,res)=>{
         
         const existingCategory = await Category.findOne({name})
         if(existingCategory){
-            return res.status(400).json({error:"Category already exists"})
+            return res.status(statusCodes.BAD_REQUEST).json({error:"Category already exists"})
         }
         const newCategory = new Category({
             name,
@@ -40,41 +48,39 @@ const addCategory = async (req,res)=>{
         })
         console.log('catagory:',newCategory)
         await newCategory.save()
-        return res.status(200).json({message:"Category added successfully"})
+        return res.status(statusCodes.OK).json({message:"Category added successfully"})
 
     } catch (error) {
         
-        return res.status(500).json({error:"Internal Server Error"})
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error:"Internal Server Error"})
     }
 }
 
 const addCategoryOffer = async (req,res)=>{
     try {
-        // const percentage = parseInt(req.body.percentage)
-        
-        // const categoryId = req.body.categoryId
+    
         const{categoryId,percentage}=req.body;
         
         const category = await Category.findById(categoryId)
         
         if(!category){
-            return res.status(404).json({status:false,message:"Category not found"})
+            return res.status(statusCodes.BAD_REQUEST).json({status:false,message:"Category not found"})
         }
         const products = await Product.find({category:category._id})
         const hasProductOffer = products.some((product)=>product.productOffer > percentage)
         if(hasProductOffer){
             return res.json({status:false,message:"Products within this category already have product offers"})
         }
-         await Category.updateOne({_id:categoryId},{$set: {categoryOffer:percentage}})
+        await Category.updateOne({_id:categoryId},{$set: {categoryOffer:percentage}})
         for(const product of products){
             product.productOffer = 0;
             product.salePrice = product.regularPrice - Math.floor(product.regularPrice * (percentage / 100));
             await product.save();
         }
         res.json({status:true})
-
+ 
     } catch (error) {
-        res.status(500).json({statues:false,message:"Internal Server Error"})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({statues:false,message:"Internal Server Error"})
     }
 }
 
@@ -84,7 +90,7 @@ const removeCategoryOffer = async (req,res)=>{
         const category = await Category.findById(categoryId)
 
         if(!category){
-            return res.status(404).json({status:false,message:"Category not found"})
+            return res.status(statusCodes.NOT_FOUND).json({status:false,message:"Category not found"})
         }
 
         const percentage = category.categoryOffer
@@ -97,20 +103,21 @@ const removeCategoryOffer = async (req,res)=>{
                 await product.save()
             }
         }
+
         category.categoryOffer = 0
         await category.save()
         res.json({status:true, message: "Category offer removed successfully" })
 
     } catch (error) {
-        res.status(500).json({status:false, message:"Intenal Server Error"})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({status:false, message:"Intenal Server Error"})
     }
 }
 
 const getListCategory = async (req,res)=> {
     try {
 
-        let id = req.query.id
-        await Category.updateOne({_id:id},{$set:{isListed:false}})
+        let catId = req.query.id
+        await Category.findByIdAndUpdate(catId,{$set:{isListed:false}})
         res.redirect("/admin/category")
 
     } catch (error) {
@@ -120,8 +127,9 @@ const getListCategory = async (req,res)=> {
 
 const getUnlistCategory = async (req,res)=>{
     try {
-        let id = req.query.id
-        await Category.updateOne({_id:id},{$set:{isListed:true}})
+        
+        const catId=req.query.id;
+        await Category.updateOne({_id:catId},{$set:{isListed:true}})
         res.redirect("/admin/category")
 
     } catch (error) {
@@ -150,7 +158,7 @@ const editCategory = async (req, res) => {
         const existingCategory = await Category.findOne({ name: categoryname, _id: { $ne: id } });
 
         if (existingCategory) {
-            return res.status(400).json({ error: "Category exists, please choose another name" });
+            return res.status(statusCodes.BAD_REQUEST).json({ error: "Category exists, please choose another name" });
         }
 
         // Update the category
@@ -166,14 +174,28 @@ const editCategory = async (req, res) => {
         if (updateCategory) {
             res.redirect("/admin/category");
         } else {
-            res.status(404).json({ error: "Category not found" });
+            res.status(statusCodes.NOT_FOUND).json({ error: "Category not found" });
         }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
     }
 };
+
+
+// const wishlist = async (req,res)=>{
+//     try {
+         
+//         const userId = req.session.user
+//         const orders = await Order.find({userId,status:{$in:['Delivered','Cancelled']}}).populate({path:'orderedItems.product',select:'productName brand'}).sort({createdOn:-1}).limit(3)
+        
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
+//     }
+// }
 
 
 module.exports = {
@@ -186,3 +208,4 @@ module.exports = {
     getEditCategory,
     editCategory
 }
+

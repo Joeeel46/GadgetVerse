@@ -43,6 +43,7 @@ router.get("/productDetails",userAuth,productController.productDetails)
 router.get("/forgot-password",profileController.getForgotPassPage)
 router.post("/forgot-email-valid",profileController.forgotEmailValid)
 router.post("/verify-passForgot-otp",profileController.verifyForgotPassOtp)
+router.get("/forgot-password-otp",profileController.getForgotOtpPage)
 router.get("/reset-password",profileController.getResetPassPage)
 router.post('/resend-forgot-otp',profileController.resendOtp)
 router.post('/reset-password',profileController.postNewPassword)
@@ -69,8 +70,10 @@ router.post('/placeOrder',userAuth,cartController.saveOrder)
 router.get('/orderPlaced',userAuth,cartController.getOrderPlacedPage)
 router.post('/update-cart-quantity',userAuth,cartController.updateQuantity)
 router.get('/orderDetails',userAuth,cartController.orderProductDetails)
+router.put('/clear',userAuth,cartController.clearCart)
 //filter products
 router.get('/products',userAuth,cartController.getSortedPage)
+router.get('/shop/categoryFilter',userAuth,cartController.getSortedCategory)
 //wishlist
 router.get('/wishlist',userAuth,wishlistController.getWishlist)
 router.post('/addToWishList',userAuth,wishlistController.addToWishlist)
@@ -84,6 +87,8 @@ router.post("/ondismiss",userAuth,paymentController.ondismiss)
 //wallet
 router.get('/cancelOrder',userAuth,productController.cancelOrder)
 router.post('/returnProduct',userAuth,walletController.returnItem)
+router.post('/createWalletPayment',userAuth,walletController.walletPayment)
+router.post('/updateWalletPayment',userAuth,walletController.updateWallet)
 //coupon
 router.get('/couponlist',userAuth,paymentController.getCouponList);
 router.post("/applyCoupon",userAuth,paymentController.applyCoupon);

@@ -15,20 +15,27 @@
       <div class="card-body">
         <div class="row">
           <div class="col-md-3">
-            <form method="post" action="/admin/addBrand" enctype="multipart/form-data">
+            <form id="addBrandForm" enctype="multipart/form-data">
               <div class="mb-4">
                 <label for="brand_name" class="form-label">Brand Name</label>
-                <input type="text" name="name" placeholder="Type here" class="form-control" id="brand_name" />
+                <input type="text" name="name" placeholder="Type here" class="form-control" id="brand_name" required />
               </div>
               <div class="mb-4">
                 <label for="brand_image" class="form-label">Brand Image</label>
                 <div class="input-upload">
                   <img src="" alt="" id="preview" style="max-width: 100%; max-height: 150px;" />
-                  <input class="form-control border mt-2" name="image" type="file" onchange="previewImage(event)" />
+                  <input
+                    class="form-control border mt-2"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onchange="validateAndPreviewImage(event)"
+                    required
+                  />
                 </div>
               </div>
               <div class="d-grid">
-                <button class="btn btn-primary" type="submit">
+                <button class="btn btn-primary" type="button" onclick="addBrand()">
                   Add Brand
                 </button>
               </div>
@@ -122,6 +129,91 @@
   </section>
 
   <script>
+    function validateAndPreviewImage(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById("preview");
+
+  if (!file) {
+    Swal.fire({
+      icon: "error",
+      title: "No File Selected",
+      text: "Please select an image file to upload.",
+      confirmButtonText: "OK"
+    });
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid File Type",
+      text: "Only image files (JPEG, PNG, GIF, WEBP) are allowed.",
+      confirmButtonText: "OK"
+    });
+    event.target.value = ""; // Clear the file input
+    preview.src = ""; // Clear the preview image
+    return;
+  }
+
+  // Optionally, check the file size (e.g., max 5MB)
+  const maxSizeInMB = 5;
+  if (file.size > maxSizeInMB * 1024 * 1024) {
+    Swal.fire({
+      icon: "error",
+      title: "File Too Large",
+      text: `Please select an image smaller than ${maxSizeInMB} MB.`,
+      confirmButtonText: "OK"
+    });
+    event.target.value = ""; // Clear the file input
+    preview.src = ""; // Clear the preview image
+    return;
+  }
+
+  // Preview the selected image
+  preview.src = URL.createObjectURL(file);
+}
+
+
+    async function addBrand() {
+    const form = document.getElementById("addBrandForm");
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("/admin/addBrand", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: data.message || "Brand added successfully!",
+          confirmButtonText: "OK"
+        }).then(() => {
+          window.location.reload(); // Reload the page or redirect as needed
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message || "Something went wrong!",
+          confirmButtonText: "OK"
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while adding the brand. Please try again!",
+        confirmButtonText: "OK"
+      });
+    }
+  }
+
     function previewImage(event) {
       const reader = new FileReader();
       reader.onload = function () {
@@ -132,21 +224,21 @@
     }
 
     function confirmDelete(brandId) {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, delete it!',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Redirect to the delete route
-      window.location.href = `/admin/deleteBrand?id=${brandId}`;
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to the delete route
+          window.location.href = `/admin/deleteBrand?id=${brandId}`;
+        }
+      });
     }
-  });
-}
   </script>
 
   <%- include("../../views/partials/admin/footer") %>

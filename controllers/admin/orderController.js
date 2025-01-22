@@ -1,6 +1,7 @@
 const User = require("../../models/userSchema");
 const Order = require("../../models/orderSchema");
 const Address = require("../../models/addressSchema");
+const statusCodes = require("../../utils/statusCodes")
 
 const getOrderPage = async (req, res) => {
     if (req.session.admin) {
@@ -47,7 +48,7 @@ const getOrderPage = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
     if (!req.session.admin) {
-        return res.status(401).json({ message: "Unauthorized. Please log in as an admin." });
+        return res.status(statusCodes.UNAUTHORIZED).json({ message: "Unauthorized. Please log in as an admin." });
     }
 
     try {
@@ -57,20 +58,20 @@ const updateOrderStatus = async (req, res) => {
 
         if (!orderId || typeof orderId !== 'string' || !status || typeof status !== 'string') {
             console.error("Invalid orderId or status");
-            return res.status(400).json({ message: "Order ID and status are required and must be strings." });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: "Order ID and status are required and must be strings." });
         }
 
         const updatedOrder = await Order.findOneAndUpdate({orderId:orderId}, { status }, { new: true });
 
         if (!updatedOrder) {
             console.error("Order not found"); 
-            return res.status(404).json({ message: "Order not found" });
+            return res.status(statusCodes.NOT_FOUND).json({ message: "Order not found" });
         }
 
         res.json({ message: "Order status updated successfully", updatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error); 
-        res.status(500).json({ message: "An error occurred while updating the order status" });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "An error occurred while updating the order status" });
     }
 };
 

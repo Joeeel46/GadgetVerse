@@ -1,6 +1,7 @@
 const Banner = require('../../models/bannerSchema')
 const path = require("path")
 const fs = require("fs")
+const statusCodes = require("../../utils/statusCodes")
 
 const getBannerPage = async (req,res)=>{
     try {

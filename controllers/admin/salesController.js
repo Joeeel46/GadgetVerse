@@ -1,5 +1,8 @@
 const Order = require("../../models/orderSchema");
-
+const Product = require("../../models/productSchema");
+const Cart = require("../../models/cartSchema");
+const Category = require("../../models/categorySchema");
+const statusCodes = require("../../utils/statusCodes")
 
 const showSaleReport = async (req, res) => {
     try {
@@ -9,10 +12,7 @@ const showSaleReport = async (req, res) => {
         
         // Fetch paginated orders
         const orderData = await Order.find()
-            .populate({
-                path: 'userId',
-                select: 'name email phone _id' // Include _id for unique customer counting
-            })
+            .populate('userId')
             .populate({
                 path: 'orderedItems.product',
                 select: 'productName price'
@@ -48,19 +48,18 @@ const showSaleReport = async (req, res) => {
             count,
             totalPages,
             page,
-            // Add new totals for the view
             totalSales,
             totalDiscount,
             totalCustomers
         });
     } catch (error) {
         console.error("Error in showSaleReport:", error);
-        res.status(500).send("An error occurred while generating the sales report.");
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("An error occurred while generating the sales report.");
     }
 };
 
 const saleReportPDF = async (req, res) => {
-    console.log('sdkjfhsdjkh');
+    
     
     try {
         const allOrders = await Order.find()
@@ -100,7 +99,7 @@ const saleReportPDF = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching all orders:', error);
-        res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch orders', error: error.message });
     }
 };
   
@@ -108,3 +107,7 @@ module.exports={
     showSaleReport,
     saleReportPDF
 }
+
+
+
+

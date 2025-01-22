@@ -3,59 +3,62 @@ const Product = require('../../models/productSchema')
 const Order = require('../../models/orderSchema')
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
+const statusCodes = require("../../utils/statusCodes")
 
 
-const pageError = async (req,res)=>{
+const pageError = async (req, res) => {
     res.render("admin-error")
 }
 
-const loadLogin = (req,res)=>{
+const loadLogin = (req, res) => {
     console.log('Session:', req.session)
-    if(req.session.admin){
+    if (req.session.admin) {
         return res.redirect("/admin")
     }
-    res.render("admin-login",{message:null})
+    res.render("admin-login", { message: null })
 }
 
-const login = async (req,res)=>{
+const login = async (req, res) => {
     try {
-        const {email,password} = req.body
-        const admin = await user.findOne({email,isAdmin:true})
-        if(admin){
+        const { email, password } = req.body
+        const admin = await user.findOne({ email, isAdmin: true })
+        if (admin) {
 
-            const passwordMatch = bcrypt.compare(password,admin.password)
-            if(passwordMatch){
+            const passwordMatch = await bcrypt.compare(password, admin.password)
+            console.log(passwordMatch)
+            if (passwordMatch) {
                 req.session.admin = true
                 return res.redirect("/admin")
-            }else{
+            } else {
                 return res.render('admin-login', { message: "Invalid password" });
             }
 
         } else {
-            
+
             return res.render('admin-login', { message: "Admin not found" });
         }
     } catch (error) {
-        console.log("login error",error)
+        console.log("login error", error)
         return res.redirect("/pageError")
     }
 }
 
-const loadDashboard = async (req,res)=>{
-    if(req.session.admin){
+const loadDashboard = async (req, res) => {
+    if (req.session.admin) {
         try {
             const salesData = await getTotalSales();
             const products = await getMostSellingProducts();
             const categories = await getMostSellingCategories();
             const brands = await getMostSellingBrands();
+            
             const totalOrders = await Order.countDocuments();
             const totalProducts = await Product.countDocuments()
+            
 
-
-            res.render('dashboard', { 
-                salesData: JSON.parse(JSON.stringify(salesData)), 
-                products: JSON.parse(JSON.stringify(products)), 
-                categories: JSON.parse(JSON.stringify(categories)), 
+            res.render('dashboard', {
+                salesData: JSON.parse(JSON.stringify(salesData)),
+                products: JSON.parse(JSON.stringify(products)),
+                categories: JSON.parse(JSON.stringify(categories)),
                 brands: JSON.parse(JSON.stringify(brands)),
                 totalOrders,
                 totalProducts
@@ -64,7 +67,7 @@ const loadDashboard = async (req,res)=>{
             res.redirect("/pageError")
         }
     } else {
-        res.redirect("/admin/login"); 
+        res.redirect("/admin/login");
     }
 }
 
@@ -85,7 +88,7 @@ async function getTotalSales() {
         const weeklySales = await Order.aggregate([
             {
                 $match: {
-                    createdOn: { $gte: startOfYear } 
+                    createdOn: { $gte: startOfYear }
                 }
             },
             {
@@ -100,7 +103,7 @@ async function getTotalSales() {
         const monthlySales = await Order.aggregate([
             {
                 $match: {
-                    createdOn: { $gte: startOfYear } 
+                    createdOn: { $gte: startOfYear }
                 }
             },
             {
@@ -122,13 +125,20 @@ async function getTotalSales() {
             { $sort: { "_id": 1 } }
         ]);
 
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                          'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
 
-        const weeklyData = {
-            labels: weeklySales.map(item => `Week ${item._id}`),
-            data: weeklySales.map(item => item.sales)
+        const totalWeeks = 52; 
+        const weeklyData = { 
+            labels: Array.from({ length: totalWeeks }, (_, i) => `Week ${i + 1}`),
+            data: Array(totalWeeks).fill(0)
         };
+        weeklySales.forEach(item => {
+            const weekIndex = item._id - 1; 
+            if (weekIndex >= 0 && weekIndex < totalWeeks) {
+                weeklyData.data[weekIndex] = item.sales;
+            }
+        });
 
         const monthlyData = {
             labels: monthNames,
@@ -141,9 +151,15 @@ async function getTotalSales() {
         });
 
         const yearlyData = {
-            labels: yearlySales.map(item => item._id.toString()),
-            data: yearlySales.map(item => item.sales)
+            labels: Array.from({ length: 5 }, (_, i) => (currentYear - 4 + i).toString()),
+            data: Array(5).fill(0)
         };
+        yearlySales.forEach(item => {
+            const yearIndex = yearlyData.labels.indexOf(item._id.toString());
+            if (yearIndex !== -1) {
+                yearlyData.data[yearIndex] = item.sales;
+            }
+        });
 
         return {
             totalSalesAmount: totalSales.length > 0 ? totalSales[0].totalSalesAmount : 0,
@@ -189,7 +205,7 @@ async function getMostSellingProducts() {
 
             { $sort: { totalQuantitySold: -1 } },
 
-            { $limit: 10 }
+            { $limit: 5 }
         ]);
 
         result.forEach(item => {
@@ -215,7 +231,7 @@ async function getMostSellingCategories() {
                     as: "productDetails"
                 }
             },
-
+            
             { $unwind: "$productDetails" },
 
             {
@@ -291,11 +307,11 @@ async function getMostSellingBrands() {
 }
 
 
-const logout = async (req,res)=>{
+const logout = async (req, res) => {
     try {
-        req.session.destroy(err=>{
-            if(err){
-                console.log("Error destroying session",err)
+        req.session.destroy(err => {
+            if (err) {
+                console.log("Error destroying session", err)
                 return res.redirect("/pageError")
             }
             res.redirect("/admin/login")

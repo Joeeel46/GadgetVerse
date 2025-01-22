@@ -5,16 +5,19 @@ const fs = require("fs")
 const path = require("path")
 const User = require("../../models/userSchema")
 const sharp = require("sharp")
+const statusCodes = require("../../utils/statusCodes")
 
 
 const getProductAddPage = async (req,res)=>{
     try {
         const category = await Category.find({isListed:true})
         const brand = await Brand.find({isBlocked:false})
+
         res.render("add-product",{
             cat:category,
             brand:brand
         })
+        
     } catch (error) {
         res.redirect("/pageerror")
     }
@@ -43,7 +46,7 @@ const addProducts = async (req,res) => {
             const categoryId = await Category.findOne({name:products.category})
 
             if(!categoryId){
-                return res.status(400).json("Invalid category name")
+                return res.status(statusCodes.BAD_REQUEST).json("Invalid category name")
             }
 
             const newProduct = new Product({
@@ -65,7 +68,7 @@ const addProducts = async (req,res) => {
             return res.redirect('/admin/addproducts')
 
         }else{
-            return res.status(400).json("Product already exists, please try with another name");
+            return res.status(statusCodes.BAD_REQUEST).json("Product already exists, please try with another name");
         }
 
     } catch (error) {
@@ -142,7 +145,7 @@ const addProductOffer = async(req,res)=>{
 
     } catch (error) {
         res.redirect("/pageerror")
-        res.status(500).json({status:false,message:"Internal Server Error"})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({status:false,message:"Internal Server Error"})
     }
 }
 
@@ -180,6 +183,23 @@ const unblockProduct = async(req,res)=>{
     }
 }
 
+// const blockunblock = async (req,res)=> {
+
+//     try {
+//         const id = req.query.id
+//         const product = await Product.findById(id)
+//         if(product.isBlocked === true){
+//             await Product.updateOne({_id:id},{$set:{isBlocked:false}})
+//         }else{
+//             await Product.updateOne({_id:id},{$set:{isBlocked:true}})
+//         }
+        
+//     } catch (error) {
+//         res.redirect("/pageerror")
+//     }
+
+// }
+
 const getEditProduct = async (req,res)=>{
     try {
         const id = req.query.id
@@ -208,7 +228,7 @@ const editProduct = async (req,res)=>{
             _id:{$ne:id}
         })
         if(existingProduct){
-            return res.status(400).json({error:"Product with this name already exists. Please try with another name"})
+            return res.status(statusCodes.BAD_REQUEST).json({error:"Product with this name already exists. Please try with another name"})
         }
 
         const category = await Category.findOne({name:data.category})
@@ -248,6 +268,7 @@ const editProduct = async (req,res)=>{
 const deleteSingleImage = async (req,res)=>{
     try {
         const {imageNameToServer,productIdToServer} = req.body
+        console.log(req.body)
         const product = await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImage:imageNameToServer}})
         const imagePath = path.join("public","uploads","re-image",imageNameToServer)
         if(fs.existsSync(imagePath)){

@@ -155,11 +155,11 @@
                      <i class="fi-rs-shopping-cart-check mr-10"></i>Wallet History
                    </a>
                  </li>
-                 <li class="nav-item">
+                 <!-- <li class="nav-item">
                    <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#referal" role="tab" aria-controls="track-orders" aria-selected="false">
                      <i class="fi-rs-shopping-cart-check mr-10"></i>Referals
                    </a>
-                 </li>
+                 </li> -->
                  <li class="nav-item">
                    <a class="nav-link" href="/logout">
                      <i class="fi-rs-sign-out mr-10"></i>Logout
@@ -209,9 +209,6 @@
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
                     </div>
                     <div class="modal-body">
                       <form id="change-password-form">
@@ -266,7 +263,8 @@
                        </div>
                      </div>
                    </div>
-                   <%})%><%}else{%>
+                   <%})%>
+                   <%}else{%>
                 
                    <div class="col-lg-6">
                      <div class="card mb-3 mb-lg-0">
@@ -326,7 +324,19 @@
                                 </td>
                               </tr>
                               <% }) %>
-                            <% } %>
+                          <%}else{%>
+                
+                            <div class="col-lg-6">
+                              <div class="card mb-3 mb-lg-0">
+                                <div class="card-header">
+                                  <h5 class="mb-0"></h5>
+                                </div>
+                                <div class="card-body">
+                                  <h5>No Orders</h5>
+                                </div>
+                              </div>
+                            </div>
+                          <%}%>
                            
                          </tbody>
                        </table>
@@ -352,11 +362,11 @@
                            </div>
                            <% }else{ %>
                            <div class="form-group">
-                            <label for="walletAmount" class="h4">Available Balance: 0</label>
+                            <label for="walletAmount" class="h4">Available Balance: ₹0</label>
                             <div class="h3"></div>
                           </div>
                           <% } %>
-                           <button type="button" class="btn btn-success" onclick="">Add Money</button>
+                           <button type="button" id="addMoneyButton" class="btn btn-success" onclick="addMoneyToWallet()">Add Money</button>
                          </form>
                        </div>
                      </div>
@@ -407,7 +417,7 @@
                </div>
 
 
-               <div class="tab-pane fade" id="referal" role="tabpanel" aria-labelledby="track-orders-tab">
+               <!-- <div class="tab-pane fade" id="referal" role="tabpanel" aria-labelledby="track-orders-tab">
                  <div class="card">
                    <div class="card-header">
                      <h5 class="mb-0">Referal</h5>
@@ -418,16 +428,330 @@
                      <p>Earned: ₹</p>
                    </div>
                  </div>
-               </div>
+               </div> -->
        </div>
      </div>
    </div>
  </section>
 </main>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
 <script>
 
-  function returnProduct(orderId) {
+const ITEMS_PER_PAGE = 8;
+
+class PaginationManager {
+  constructor(tableId, paginationId, columns, rowMapper) {
+    this.tableId = tableId;
+    this.paginationId = paginationId;
+    this.columns = columns;
+    this.rowMapper = rowMapper;
+    this.currentPage = 1;
+    this.data = [];
+    
+    // Bind methods
+    this.handlePageChange = this.handlePageChange.bind(this);
+    this.render = this.render.bind(this);
+    this.initialize = this.initialize.bind(this);
+  }
+
+  // Initialize the pagination system
+  initialize() {
+    // Get table and create pagination container
+    const table = document.querySelector(this.tableId);
+    if (!table) return;
+
+    const paginationContainer = document.createElement('div');
+    paginationContainer.id = this.paginationId.replace('#', '');
+    table.parentNode.insertAdjacentElement('afterend', paginationContainer);
+
+    // Load initial data from table
+    this.data = Array.from(table.querySelectorAll('tbody tr'))
+      .filter(row => row.cells.length >= this.columns)
+      .map(this.rowMapper);
+
+    // Initial render
+    if (this.data.length > 0) {
+      this.render();
+    }
+  }
+
+  // Handle page changes
+  handlePageChange(newPage) {
+    this.currentPage = newPage;
+    this.render();
+  }
+
+  // Render table content and pagination
+  render() {
+    this.renderTable();
+    this.renderPagination();
+  }
+
+  // Render table content
+  renderTable() {
+    const table = document.querySelector(this.tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const start = (this.currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const paginatedData = this.data.slice(start, end);
+
+    let html = '';
+    if (paginatedData.length > 0) {
+      paginatedData.forEach(item => {
+        if (this.tableId.includes('orders')) {
+          html += `
+            <tr>
+              <td>${item.orderId}</td>
+              <td>${item.status}</td>
+              <td>${item.date}</td>
+              <td>${item.finalAmount}</td>
+              <td><a href="/orderDetails?id=${item.orderId}" class="btn-small d-block">View</a></td>
+              <td>
+                ${item.status !== 'Cancelled' && item.status !== 'Delivered' && 
+                  item.status !== 'Return Requested' && item.status !== 'Returned' 
+                  ? `<a onclick="confirmCancel('${item._id}')">Cancel</a>`
+                  : item.status === 'Delivered' || item.status === 'Return Requested'
+                    ? `<a onclick="returnProduct('${item._id}')">Return</a>`
+                    : ''
+                }
+              </td>
+            </tr>
+          `;
+        } else {
+          html += `
+            <tr>
+              <td>${item.date}</td>
+              <td>${item.type}</td>
+              <td>₹${item.amount}</td>
+              <td>${item._id || '-'}</td>
+              <td>${item.status}</td>
+            </tr>
+          `;
+        }
+      });
+    } else {
+      const colSpan = this.tableId.includes('orders') ? 6 : 5;
+      html = `<tr><td colspan="${colSpan}" class="text-center">No data available</td></tr>`;
+    }
+
+    tbody.innerHTML = html;
+  }
+
+  // Render pagination controls
+  renderPagination() {
+    const container = document.querySelector(this.paginationId);
+    if (!container || !this.data.length) {
+      if (container) container.innerHTML = '';
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(this.data.length / ITEMS_PER_PAGE));
+
+    let html = `
+      <div class="pagination-controls d-flex justify-content-center align-items-center gap-2 mt-3">
+        <button 
+          class="btn btn-sm ${this.currentPage === 1 ? 'btn-secondary disabled' : 'btn-primary'}"
+          ${this.currentPage === 1 ? 'disabled' : ''}
+          data-page="${this.currentPage - 1}">
+          Previous
+        </button>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+      html += `
+        <button 
+          class="btn btn-sm ${this.currentPage === i ? 'btn-primary' : 'btn-outline-primary'}"
+          data-page="${i}">
+          ${i}
+        </button>
+      `;
+    }
+
+    html += `
+        <button 
+          class="btn btn-sm ${this.currentPage === totalPages ? 'btn-secondary disabled' : 'btn-primary'}"
+          ${this.currentPage === totalPages ? 'disabled' : ''}
+          data-page="${this.currentPage + 1}">
+          Next
+        </button>
+      </div>
+    `;
+
+    container.innerHTML = html;
+
+    // Add event listeners
+    container.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', () => {
+        const page = parseInt(button.dataset.page);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+          this.handlePageChange(page);
+        }
+      });
+    });
+  }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Orders Pagination
+  const ordersPagination = new PaginationManager(
+    '#orders table',
+    '#orders-pagination',
+    6,
+    row => ({
+      orderId: row.cells[0].textContent,
+      status: row.cells[1].textContent,
+      date: row.cells[2].textContent,
+      finalAmount: row.cells[3].textContent,
+      _id: row.cells[5].querySelector('a')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1] || ''
+    })
+  );
+  ordersPagination.initialize();
+
+  // Initialize Wallet History Pagination
+  const walletPagination = new PaginationManager(
+    '#wallet-history table',
+    '#wallet-history-pagination',
+    5,
+    row => ({
+      date: row.cells[0].textContent,
+      type: row.cells[1].textContent,
+      amount: row.cells[2].textContent.replace('₹', ''),
+      _id: row.cells[3].textContent,
+      status: row.cells[4].textContent
+    })
+  );
+  walletPagination.initialize();
+});
+
+
+
+  async function addMoneyToWallet() {
+    const {value:amount} = await Swal.fire({
+      title:"Enter the amount to add to wallet",
+      input: 'number',
+      inputAttribute:{
+        min:1,
+        max:100000
+      },
+      inputValidator: (value) => {
+        if(!value || value <= 0){
+          return "Please enter a valid amount!"
+        }
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Add Money',
+      confirmButtonColor: '#007bff'
+    })
+   
+
+    if(!amount){
+      return;
+    }
+
+    try {
+      
+      const paymentResponse = await fetch('/createWalletPayment', {
+        method: 'POST',
+        headers: {
+          'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({ amount })
+      })
+      
+
+      const paymentData = await paymentResponse.json()
+    
+      
+      if(!paymentData.success){
+        await Swal.fire({
+          icon: 'error',
+          title: 'Payment Error',
+          confirmButtonText: 'Okay',
+          confirmButtonColor: '#007bff',
+        });
+        throw new Error('Failed to create Razorpay order.');
+      }
+
+      const options = {
+        key:"rzp_test_pgn7NyAMZL75UQ",
+        amount: amount * 100,
+        currency: 'INR',
+        description: 'Adding money to wallet',
+        order_id: paymentData.orderId,
+        handler: async function (response) {
+          try{
+            const paymentDetails = {
+              paymentId: response.razorpay_payment_id,
+              razorpayId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              amount: amount
+            }
+
+            const updateResponse = await fetch ('/updateWalletPayment',{
+              method:'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(paymentDetails)
+            })
+
+            const updateResult = await updateResponse.json()
+            console.log('upfateresult',updateResult)
+            if(updateResult.status === 200){
+              Swal.fire({
+                icon:'success',
+                title: 'Money Added',
+                text:`₹${amount} has been added to your wallet.`,
+                confirmButtonText: 'Okay'
+              }).then(()=>{
+                window.location.reload()
+              })
+
+            }else{
+              console.log(error)
+              throw new Error(updateResult.message || "Failed to update wallet.")
+            }
+
+          } catch (error){
+            console.log('Error updating wallet:',error)
+            Swal.fire({
+              icon:'error',
+              title: 'Error',
+              text:error.message
+            })
+          }
+        },
+        prefil:{
+          name: "Your Name",
+          email: "your@example.com",
+          contact: "1234567890"
+        },
+        theme: {
+          color: "#39b4ac",
+
+        },
+      }
+
+      const razorpay = new Razorpay(options);
+      razorpay.open();
+
+    } catch (error) {
+      console.error('Error initiating wallet payment:', error);
+      Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message,
+      });
+    }
+  }
+
+  async function returnProduct(orderId) {
       Swal.fire({
           title: "Are you sure?",
           text: "Do you want to return this product?",
@@ -446,9 +770,16 @@
               .then(response => response.json())
               .then(data => {
                   if (data.success) {
-                      Swal.fire("Returned!", "The product has been returned successfully.", "success");
+                      Swal.fire({
+                        title:"Returned!", 
+                        text:"The product has been returned successfully.", 
+                        icon:"success",
+                        timer:2500
+                      })
                       // Optionally, reload the page to reflect changes
-                      window.location.reload();
+                      .then(()=>{
+                        window.location.reload()
+                      })
                   } else {
                       Swal.fire("Error", data.message, "error");
                   }

@@ -6,6 +6,7 @@ const Brand = require('../../models/brandSchema')
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const bcrypt = require("bcrypt")
+const statusCodes = require("../../utils/statusCodes")
 
 
 const pageNotFound = async (req, res) => {
@@ -21,7 +22,7 @@ const loadSignup = async (req, res) => {
         return res.render("signup")
     } catch (error) {
         console.log("Home page not loading:", error)
-        res.status(500).send("Server Error")
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("Server Error")
     }
 }
 
@@ -115,7 +116,7 @@ const loadHomePage = async (req, res) => {
         if(user){
             
             const userData = await User.findById({_id:user})
-            console.log(userData)
+            // console.log(userData)
             res.render("home",{user:userData ,products:productData,banner:findBanner || []})
 
         }else{
@@ -126,7 +127,7 @@ const loadHomePage = async (req, res) => {
     } catch (error) {
 
         console.log('Home page not found:', error) // Added error logging
-        res.status(500).send("Server error")
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).send("Server error")
         
     }
 }
@@ -160,11 +161,11 @@ const verifyOtp = async (req, res) => {
             req.session.user = saveUserData._id;
             res.json({ success: true, redirectUrl: "/" });
         } else {
-            res.status(400).json({ success: false, message: "Invalid OTP, Please try again" });
+            res.status(statusCodes.BAD_REQUEST).json({ success: false, message: "Invalid OTP, Please try again" });
         }
     } catch (error) {
         console.error("Error Verifying OTP", error);
-        res.status(500).json({ success: false, message: "An error occurred" });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "An error occurred" });
     }
 };
 
@@ -172,7 +173,7 @@ const resendOtp = async (req, res) => {
     try {
         const { email } = req.session.userData;
         if (!email) {
-            return res.status(400).json({ success: false, message: "Email not found in session" });
+            return res.status(statusCodes.BAD_REQUEST).json({ success: false, message: "Email not found in session" });
         }
 
         const otp = generateOtp();
@@ -182,13 +183,13 @@ const resendOtp = async (req, res) => {
         const emailSent = await sendVerificationEmail(email, otp);
         if (emailSent) {
             console.log("Resend OTP:", otp);
-            res.status(200).json({ success: true, message: "OTP Resent successfully" }); // Fixed typo: 'statue' -> 'status'
+            res.status(statusCodes.OK).json({ success: true, message: "OTP Resent successfully" }); // Fixed typo: 'statue' -> 'status'
         } else {
-            res.status(500).json({ success: false, message: "Failed to send OTP, please try again." }); // Fixed typo: 'statue' -> 'status' and changed status code
+            res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to send OTP, please try again." }); // Fixed typo: 'statue' -> 'status' and changed status code
         }
     } catch (error) {
         console.error("Error resending OTP", error);
-        res.status(500).json({ success: false, message: "Internal Server Error. Please try again" }); // Fixed typo: 'sucess' -> 'success'
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error. Please try again" }); // Fixed typo: 'sucess' -> 'success'
     }
 };
 
@@ -259,14 +260,22 @@ const loadShoppingPage = async (req, res) => {
         const categoryIds = categories.map((category) => category._id.toString());
         const page = parseInt(req.query.page) || 1;
         const limit = 8;
-        const skip = (page - 1) * limit;
+        const skip = (page - 1) * limit;    
 
-        const products = await Product.find({
+        console.log('querry',req.query)
+
+        let condition = {
             isBlocked: false,
             category: { $in: categoryIds },
             quantity: { $gt: 0 },
-        }).populate('category').sort({ createdOn: -1 }).skip(skip).limit(limit);
+        }
 
+        if(req.query.category){
+            condition.category = req.query.category
+        }
+
+        const products = await Product.find(condition).populate('category').sort({ createdOn: -1 }).skip(skip).limit(limit);
+        
         const totalProducts = await Product.countDocuments({
             isBlocked: false,
             category: { $in: categoryIds },
@@ -281,6 +290,7 @@ const loadShoppingPage = async (req, res) => {
         res.render("shop", {
             user: userData,
             products: products,
+            categories,
             category: categoriesWithIds,  
             brand: brands,  
             totalProducts: totalProducts,
@@ -296,7 +306,7 @@ const liveSearch = async (req, res) => {
     try {
         const query = req.query.query; // The search term
         if (!query) {
-            return res.status(400).json({ message: "Query is required" });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: "Query is required" });
         }
 
         // Search for products where the product name matches the query
@@ -307,7 +317,7 @@ const liveSearch = async (req, res) => {
         return res.json({ products });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
     }
 };
 
@@ -317,7 +327,7 @@ const searchAllProducts = async (req, res) => {
         return res.json({ products });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
     }
 };
 

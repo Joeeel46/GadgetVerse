@@ -41,7 +41,7 @@
                         <div class="col-lg-4 mb-4">
                             <label class="form-label">Brand</label>
                             <select class="form-select border" name="brand">
-
+                                <option value="">Select Brand</option>
                                 <%for(let i=0;i<brand.length;i++){%>
                                     <option value="<%=brand[i].brandName%>">
                                         <%=brand[i].brandName%>
@@ -99,7 +99,7 @@
                                     <div class="col-sm-6 mb-3">
                                         <label class="form-label">Category</label>
                                         <select class="form-select border" style="width: 150px;" name="category">
-
+                                            <option value="">Select Category</option>
                                             <%for(let i=0;i<cat.length;i++){%>
                                                 <option value="<%=cat[i].name%>">
                                                     <%=cat[i].name%>
@@ -116,9 +116,11 @@
                             <div class="card-header">
                                 <h4>Choose images</h4>
                             </div>
+                            
                             <div class="border row">
                                 <div id="addedImagesContainer" class="thumbnails-container"></div>
                             </div>
+
                             <div class="row">
                                 <div class="card-body align-items-center" style="margin-bottom: 20px;">
                                     <img src="" alt="" id="imgView1">
@@ -266,39 +268,66 @@
     }
 
     const selectedImages = [];
-    document.getElementById("input1").addEventListener("change", handleFileSelect);
 
-    function handleFileSelect(event) {
-        const addedImagesContainer = document.getElementById("addedImagesContainer");
-        addedImagesContainer.innerHTML = "";
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            selectedImages.push(file);
-            const thumbnail = document.createElement("div");
-            thumbnail.classList.add("thumbnail");
+function handleFileSelect(event) {
+    const addedImagesContainer = document.getElementById("addedImagesContainer");
+    addedImagesContainer.innerHTML = "";
+    const files = event.target.files;
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        selectedImages.push(file);
+        const thumbnail = document.createElement("div");
+        thumbnail.classList.add("thumbnail");
 
-            const img = document.createElement("img");
-            img.src = URL.createObjectURL(file);
-            img.alt = "thumbnail";
-            img.style.width = "50px";
-            img.style.height = "auto";
-            const removeIcon = document.createElement("span");
-            removeIcon.classList.add("remove-icon");
-            removeIcon.innerHTML = "&times;";
-            removeIcon.addEventListener("click", function () {
-                const index = selectedImages.indexOf(file);
-                if (index !== -1) {
-                    selectedImages.splice(index, 1);
-                }
-                thumbnail.remove()
-
-            });
-            thumbnail.appendChild(img);
-            thumbnail.appendChild(removeIcon);
-            addedImagesContainer.appendChild(thumbnail);
-        }
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.alt = "thumbnail";
+        img.style.width = "50px";
+        img.style.height = "auto";
+        
+        const removeIcon = document.createElement("span");
+        removeIcon.classList.add("remove-icon");
+        removeIcon.innerHTML = "&times;";
+        removeIcon.style.cursor = 'pointer';
+        
+        removeIcon.addEventListener("click", function () {
+            // Remove from selectedImages array
+            const index = selectedImages.indexOf(file);
+            if (index !== -1) {
+                selectedImages.splice(index, 1);
+            }
+            
+            // Clear the file input
+            const fileInput = document.getElementById('input1');
+            fileInput.value = '';
+            
+            // Clear the preview image
+            document.getElementById("imgView1").src = '';
+            
+            // Remove the thumbnail
+            thumbnail.remove();
+            
+            // Clear any cropper instances if they exist
+            const cropperContainer = document.querySelector("#croppedImg1").parentNode;
+            cropperContainer.style.display = "none";
+            const image = document.getElementById("imgView1");
+            if (image.cropper) {
+                image.cropper.destroy();
+            }
+            
+            // Clear the cropped image if it exists
+            document.getElementById("croppedImg1").src = '';
+        });
+        
+        thumbnail.appendChild(img);
+        thumbnail.appendChild(removeIcon);
+        addedImagesContainer.appendChild(thumbnail);
     }
+}
+
+// Add event listener to file input
+document.getElementById("input1").addEventListener("change", handleFileSelect);
 
 
     function validateForm() {
@@ -342,6 +371,15 @@
         isValid = false;
     }
 
+    if (brand.trim() === "") {
+        displayErrorMessage('brand-error', 'Please select a brand.');
+        isValid = false;
+    }
+
+    if (category.trim() === "") {
+        displayErrorMessage('category-error', 'Please select a category.');
+        isValid = false;
+    }
 
     if (color.trim() === "") {
         displayErrorMessage('color-error', 'Please enter a color.');
