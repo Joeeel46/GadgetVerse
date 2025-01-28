@@ -32,13 +32,17 @@ router.get("/auth/google/callback",passport.authenticate('google',{failureRedire
     res.redirect('/');
 })
 
+router.get('/about-us', (req, res) => {
+    res.render('about');
+});
+
 router.get("/login",userController.loadLogin)
 router.post("/login",userController.login)
 router.get("/logout",userController.logout)
 router.post("/logout",userController.logout)
 
 
-router.get("/productDetails",userAuth,productController.productDetails)
+router.get("/productDetails",productController.productDetails)
 
 router.get("/forgot-password",profileController.getForgotPassPage)
 router.post("/forgot-email-valid",profileController.forgotEmailValid)

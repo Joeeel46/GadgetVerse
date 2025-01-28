@@ -1,0 +1,134 @@
+<%- include("../partials/user/header.ejs") %>
+
+<style>
+  .about-us-section {
+    padding: 50px 0;
+    background-color: #f8f9fa;
+  }
+
+  .about-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .about-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .about-description {
+    font-size: 1.2em;
+    color: #666;
+    max-width: 900px;
+    margin-bottom: 30px;
+  }
+
+  .about-image {
+    width: 300px; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
+}
+
+  .team-section {
+    padding: 50px 0;
+    background-color: #ffffff;
+    text-align: center;
+  }
+
+  .team-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+  }
+
+  .team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+
+  .team-member {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+  }
+
+  .team-member img {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 20px;
+  }
+
+  .team-member h3 {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .team-member p {
+    font-size: 1em;
+    color: #666;
+  }
+</style>
+
+<main class="main">
+  <section class="about-us-section">
+    <div class="about-us-container">
+      <h1 class="about-title">About Gadgetverse</h1>
+      <p class="about-description">
+        At Gadgetverse, we believe in the power of technology to connect and elevate your lifestyle. Our curated collection of smartphones, ranging from cutting-edge flagships to value-packed budget devices, is designed to keep you ahead in the fast-paced digital world. Each smartphone is carefully selected to meet the highest standards of innovation, performance, and design. Whether you're a tech enthusiast seeking the latest features or simply looking for a reliable companion to stay connected, Gadgetverse offers something exceptional for every need and preference.
+      </p>
+      <img class="about-image" src="/evara-user/assets/imgs/theme/logoo.png" alt="About Gadget-Verse">
+    </div>
+  </section>
+
+  <section class="team-section">
+    <h2 class="team-title">Meet Our Team</h2>
+    <div class="team-grid">
+      <div class="team-member">
+        <!-- <img src="/uploads/banner/shanuu.jpg" alt="Team Member 1"> -->
+        <h3>Joel Johnson</h3>
+        <p>Founder & CEO</p>
+        <p>Joel is the visionary behind Gadgetverse, bringing his passion for technology to the forefront of the company.</p>
+      </div>
+  
+      <div class="team-member">
+        <!-- <img src="/uploads/banner/me.jpg" alt="Team Member 2"> -->
+        <h3>Athul</h3>
+        <p>Tech Director</p>
+        <p>Athul oversees the selection of our smartphone collections at Gadgetverse, ensuring that each device stands out for its innovation and style.</p>
+      </div>
+  
+      <div class="team-member">
+        <!-- <img src="/uploads/banner/joel.jpg" alt="Team Member 3"> -->
+        <h3>Aleena</h3>
+        <p>Customer Relations</p>
+        <p>Aleena is the friendly face of Gadgetverse, helping customers find the perfect smartphones and providing exceptional service.</p>
+      </div>
+  
+      <div class="team-member">
+        <!-- <img src="/uploads/banner/vishnu.jpg" alt="Team Member 4"> -->
+        <h3>Vishnu</h3>
+        <p>Marketing Lead</p>
+        <p>Vishnu crafts strategies to showcase Gadgetverse's offerings, connecting cutting-edge technology with enthusiasts worldwide.</p>
+      </div>
+    </div>
+  </section>
+  
+</main>
+
+<%- include("../partials/user/footer.ejs") %>
