@@ -54,6 +54,13 @@ const addToCart = async (req, res) => {
                     // If the product already exists in the cart, check stock
                     const product = await Product.findById(productId);
                     const totalQuantity = quantityNumber + productExists.quantity;
+                    if(totalQuantity > 5){
+                        return res.status(400).json({
+                            status: 400,
+                            success: false,
+                            message: "Cart limit reached!"
+                        })
+                    }
 
                     if (product.quantity < totalQuantity) {
                         return res.status(400).json({
@@ -63,7 +70,7 @@ const addToCart = async (req, res) => {
                         });
                     }
     
-                    // Update product quantity in cart
+                    
                     const itemIndex = cart.items.findIndex(item => item.productId.equals(productId));
                     if (itemIndex > -1) {
                         cart.items[itemIndex].quantity += quantityNumber;
@@ -418,67 +425,7 @@ const getOrderPlacedPage = async (req, res) => {
     }
 }
 
-const getSortedPage = async (req, res) => {
-    try {
-        const { sortBy } = req.query;
-        const page = parseInt(req.query.page) || 1;  // Get page from query or default to 1
-        const limit = 15;  // Products per page
 
-        let sortCriteria;
-        switch (sortBy) {
-            case 'mostPopular':
-                sortCriteria = { popularity: -1 };
-                break;
-            case 'priceLowHigh':
-                sortCriteria = { salePrice: 1 };
-                break;
-            case 'priceHighLow':
-                sortCriteria = { salePrice: -1 };
-                break;
-            case 'newArrivals':
-                sortCriteria = { createdAt: -1 };
-                break;
-            case 'avgRating':
-                sortCriteria = { avgRating: -1 };
-                break;
-            case 'aToZ':
-                sortCriteria = { productName: 1 };
-                break;
-            case 'zToA':
-                sortCriteria = { productName: -1 };
-                break;
-            default:
-                sortCriteria = {};
-        }
-
-
-        const totalProducts = await Product.countDocuments();
-        const totalPages = Math.ceil(totalProducts / limit);
-        const skip = (page - 1) * limit;
-
-
-        const [products, categories] = await Promise.all([
-            Product.find()
-                .populate('category')
-                .sort(sortCriteria)
-                .skip(skip)
-                .limit(limit),
-            Category.find()
-        ]);
-
-        res.render('shop', {
-            products,
-            category: categories,
-            categories,
-            totalPages,
-            currentPage: page
-        });
-
-    } catch (error) {
-        console.error('Error in getSortedPage:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).render('error', { message: 'Internal server error' });
-    }
-};
 
 const updateQuantity = async (req, res) => {
     const { productId, change } = req.body;
@@ -580,31 +527,6 @@ const clearCart = async (req, res) => {
     }
 }
 
-const getSortedCategory = async (req, res) => {
-    try {
-        const { category } = req.query;
-        const products = await Product.find({ category })
-            .populate('category', ['name', 'categoryOffer'])
-            .lean(); 
-        
-        
-        if (req.xhr) {
-            res.render('product-grid', { 
-                products,
-                layout: false 
-            });
-        } else {
-            
-            res.render('shop', { products, category });
-        }
-    } catch (error) {
-        console.error('Category filter error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error fetching filtered products' 
-        });
-    }
-};
 
 module.exports = {
     getCart,
@@ -613,9 +535,7 @@ module.exports = {
     removeCart,
     updateQuantity,
     getOrderPlacedPage,
-    getSortedPage,
     saveOrder,
     orderProductDetails,
-    clearCart,
-    getSortedCategory
+    clearCart
 }

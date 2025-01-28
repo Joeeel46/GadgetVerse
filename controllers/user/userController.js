@@ -254,51 +254,79 @@ const logout = async (req, res) => {
 
 const loadShoppingPage = async (req, res) => {
     try {
-        const user = req.session.user;
-        const userData = await User.findOne({ _id: user });
-        const categories = await Category.find({ isListed: true });
-        const categoryIds = categories.map((category) => category._id.toString());
+        const { sortBy, category } = req.query;
         const page = parseInt(req.query.page) || 1;
-        const limit = 8;
-        const skip = (page - 1) * limit;    
+        const limit = 15;
 
-        console.log('querry',req.query)
+        // Prepare condition for filtering
+        const condition = category ? { category } : {};
 
-        let condition = {
-            isBlocked: false,
-            category: { $in: categoryIds },
-            quantity: { $gt: 0 },
+        // Determine sort criteria based on sortBy parameter
+        let sortCriteria;
+        switch (sortBy) {
+            case 'mostPopular':
+                sortCriteria = { popularity: -1 };
+                break;
+            case 'priceLowHigh':
+                sortCriteria = { salePrice: 1 };
+                break;
+            case 'priceHighLow':
+                sortCriteria = { salePrice: -1 };
+                break;
+            case 'newArrivals':
+                sortCriteria = { createdAt: -1 };
+                break;
+            case 'avgRating':
+                sortCriteria = { avgRating: -1 };
+                break;
+            case 'aToZ':
+                sortCriteria = { productName: 1 };
+                break;
+            case 'zToA':
+                sortCriteria = { productName: -1 };
+                break;
+            default:
+                sortCriteria = { createdOn: -1 };
         }
 
-        if(req.query.category){
-            condition.category = req.query.category
-        }
-
-        const products = await Product.find(condition).populate('category').sort({ createdOn: -1 }).skip(skip).limit(limit);
-        
-        const totalProducts = await Product.countDocuments({
-            isBlocked: false,
-            category: { $in: categoryIds },
-            quantity: { $gt: 0 },
-        });
-
+        // Calculate pagination parameters
+        const totalProducts = await Product.countDocuments(condition);
         const totalPages = Math.ceil(totalProducts / limit);
+        const skip = (page - 1) * limit;
 
-        const brands = await Brand.find({ isBlocked: false }); 
-        const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
-       
-        res.render("shop", {
-            user: userData,
-            products: products,
+        // Fetch products with all specified criteria
+        const [products, categories] = await Promise.all([
+            Product.find(condition)
+                .populate('category', ['name', 'categoryOffer'])
+                .sort(sortCriteria)
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Category.find()
+        ]);
+
+        // Check if it's an AJAX request
+        if (req.xhr) {
+            return res.render('product-grid', { 
+                products,
+                layout: false 
+            });
+        }
+
+        // Render full shop page
+        res.render('shop', {
+            products,
+            category: categories,
             categories,
-            category: categoriesWithIds,  
-            brand: brands,  
-            totalProducts: totalProducts,
-            currentPage: page,  
-            totalPages: totalPages,
+            totalPages,
+            currentPage: page,
+            selectedCategory: category,
+            sortBy
         });
+
     } catch (error) {
-        res.redirect("/pageNotFound");
+        console.error('Error in getSortedPage:', error);
+        res.status(500).render('error', { message: 'Internal server error' });
     }
 };
 

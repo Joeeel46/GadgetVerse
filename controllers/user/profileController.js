@@ -75,9 +75,15 @@ const forgotEmailValid = async (req,res)=>{
         console.log(email)
         const findUser = await User.findOne({ email: email });
         console.log(findUser)
+        
         if (!findUser) {
             return res.status(400).json({ success: false, message: "Please provide an existing email address." });
         }
+
+        if(findUser.isAdmin){
+            return res.status(400).json({ success: false, message: "Action Restricted!"})
+        }
+
         if (findUser) {
             const otp = generateOtp();
             const emailSent = await sendVerificationEmail(email, otp);
@@ -169,10 +175,12 @@ const userProfile = async (req,res)=>{
     try {
         const userId = req.session.user
         const userData = await User.findById(userId)
+        const { tab } = req.query || 'dashboard'
         const addressData = await Address.findOne({userId:userId})
         const orders = await Order.find({userId}).sort({ createdOn: -1 });
         const wallet = await Wallet.findOne({userId:userId});
         res.render('profile',{
+            activeTab: tab,
             user:userData,
             userAddress:addressData,
             orders,

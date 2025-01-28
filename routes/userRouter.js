@@ -58,7 +58,7 @@ router.get('/editAddress',userAuth,profileController.editAddress)
 router.post('/editAddress',userAuth,profileController.postEditAddress)
 router.get('/deleteAddress',userAuth,profileController.deleteAddress)
 //shop
-router.get('/shop',userAuth,userController.loadShoppingPage)
+router.get('/shop',userController.loadShoppingPage)
 router.get('/search',userAuth,userController.liveSearch)
 router.get('/all-products',userAuth,userController.searchAllProducts)
 //cart
@@ -71,9 +71,6 @@ router.get('/orderPlaced',userAuth,cartController.getOrderPlacedPage)
 router.post('/update-cart-quantity',userAuth,cartController.updateQuantity)
 router.get('/orderDetails',userAuth,cartController.orderProductDetails)
 router.put('/clear',userAuth,cartController.clearCart)
-//filter products
-router.get('/products',userAuth,cartController.getSortedPage)
-router.get('/shop/categoryFilter',userAuth,cartController.getSortedCategory)
 //wishlist
 router.get('/wishlist',userAuth,wishlistController.getWishlist)
 router.post('/addToWishList',userAuth,wishlistController.addToWishlist)

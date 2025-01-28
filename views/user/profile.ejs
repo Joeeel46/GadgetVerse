@@ -131,27 +131,27 @@
              <div class="dashboard-menu">
                <ul class="nav flex-column" role="tablist">
                  <li class="nav-item">
-                   <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="false">
+                   <a class="nav-link <%= activeTab === 'dashboard' ? 'active' : '' %>" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="<%= activeTab === 'dashboard' %>">
                      <i class="fi-rs-settings-sliders mr-10"></i>Dashboard
                    </a>
                  </li>
                  <li class="nav-item">
-                   <a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="true">
+                   <a class="nav-link <%= activeTab === 'address' ? 'active' : '' %>" id="address-tab" data-bs-toggle="tab" href="#address" role="tab" aria-controls="address" aria-selected="<%= activeTab === 'address' %>">
                      <i class="fi-rs-marker mr-10"></i>My Address
                    </a>
                  </li>
                  <li class="nav-item">
-                   <a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="false">
+                   <a class="nav-link <%= activeTab === 'orders' ? 'active' : '' %>" id="orders-tab" data-bs-toggle="tab" href="#orders" role="tab" aria-controls="orders" aria-selected="<%= activeTab === 'orders' %>">
                      <i class="fi-rs-shopping-bag mr-10"></i>Orders
                    </a>
                  </li>
                  <li class="nav-item">
-                   <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#track-orders" role="tab" aria-controls="track-orders" aria-selected="false">
+                   <a class="nav-link <%= activeTab === 'wallet' ? 'active' : '' %>" id="track-orders-tab" data-bs-toggle="tab" href="#track-orders" role="tab" aria-controls="track-orders" aria-selected="<%= activeTab === 'wallet' %>">
                      <i class="fi-rs-shopping-cart-check mr-10"></i>Wallet
                    </a>
                  </li>
                  <li class="nav-item">
-                   <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="#wallet-history" role="tab" aria-controls="track-orders" aria-selected="false">
+                   <a class="nav-link <%= activeTab === 'wallet-history' ? 'active' : '' %>" id="track-orders-tab" data-bs-toggle="tab" href="#wallet-history" role="tab" aria-controls="track-orders" aria-selected="<%= activeTab === 'wallet-history' %>">
                      <i class="fi-rs-shopping-cart-check mr-10"></i>Wallet History
                    </a>
                  </li>
@@ -928,6 +928,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
 
 </script>
 

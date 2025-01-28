@@ -151,6 +151,7 @@
                                         </div>
 
                                         <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                                        <% if(quantity != 0){ %>
                                         <div class="detail-extralink">
                                           
                                                 <input type="hidden" name="productId" value="<%= product._id %>">
@@ -172,6 +173,9 @@
                                                 Now</button>
 
                                         </div>
+                                        <% }else{ %>
+                                            <h3 class="text-start text-danger">Out of stock</h3>
+                                        <% } %>
                                         <ul class="product-meta font-xs color-grey mt-50">
                                             
                                             <li class="mb-5">Category: <a href="#" rel="tag"></a> <a href="#" rel="tag">
