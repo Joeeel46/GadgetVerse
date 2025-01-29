@@ -289,12 +289,12 @@ const loadShoppingPage = async (req, res) => {
                 sortCriteria = { createdOn: -1 };
         }
 
-        // Calculate pagination parameters
+        
         const totalProducts = await Product.countDocuments(condition);
         const totalPages = Math.ceil(totalProducts / limit);
         const skip = (page - 1) * limit;
 
-        // Fetch products with all specified criteria
+     
         const [products, categories] = await Promise.all([
             Product.find(condition)
                 .populate('category', ['name', 'categoryOffer'])
@@ -305,7 +305,7 @@ const loadShoppingPage = async (req, res) => {
             Category.find()
         ]);
 
-        // Check if it's an AJAX request
+        
         if (req.xhr) {
             return res.render('product-grid', { 
                 products,
@@ -313,7 +313,7 @@ const loadShoppingPage = async (req, res) => {
             });
         }
 
-        // Render full shop page
+        
         res.render('shop', {
             products,
             category: categories,

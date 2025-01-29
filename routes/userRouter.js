@@ -32,7 +32,7 @@ router.get("/auth/google/callback",passport.authenticate('google',{failureRedire
     res.redirect('/');
 })
 
-router.get('/about-us', (req, res) => {
+router.get('/about-us',(req, res) => {
     res.render('about');
 });
 
