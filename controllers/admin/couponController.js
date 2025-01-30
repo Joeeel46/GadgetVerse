@@ -47,7 +47,7 @@ const addCoupon = async (req, res) => {
             return res.status(statusCodes.BAD_REQUEST).json({ success: false, message: "Expiration date must be after start date" });
         }
         const newCoupon = new Coupon({
-            name:couponCode,
+            name:couponCode.toUpperCase(),
             createdOn: startDate,
             expiredOn: endDate,
             offerPercentage:percentage,
