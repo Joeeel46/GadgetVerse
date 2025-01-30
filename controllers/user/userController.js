@@ -339,30 +339,43 @@ const loadShoppingPage = async (req, res) => {
 
 const liveSearch = async (req, res) => {
     try {
-        const query = req.query.query; // The search term
+        const query = req.query.query;
         if (!query) {
-            return res.status(statusCodes.BAD_REQUEST).json({ message: "Query is required" });
+            return res.status(statusCodes.BAD_REQUEST).json({ 
+                message: "Query is required" 
+            });
         }
-
-        // Search for products where the product name matches the query
+        
+        // Search for products with populated category and other necessary fields
         const products = await Product.find({
-            productName: { $regex: query, $options: "i" } // Case-insensitive search
-        }).limit(10); // Limit the results to prevent overload
-
+            productName: { $regex: query, $options: "i" }
+        })
+        .populate('category') // Populate category for badges and offers
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .limit(10);
+        
         return res.json({ products });
     } catch (err) {
         console.error(err);
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
+            message: "Server error" 
+        });
     }
 };
 
 const searchAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().limit(10);
+        const products = await Product.find()
+            .populate('category') // Populate category
+            .sort({ createdAt: -1 })
+            .limit(10);
+            
         return res.json({ products });
     } catch (err) {
         console.error(err);
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
+            message: "Server error" 
+        });
     }
 };
 
