@@ -39,17 +39,17 @@ router.post("/editCategory/:id",adminAuth,categoryController.editCategory)
 //brand management
 router.get("/brands",adminAuth,brandController.getBrandPage)
 router.post("/addBrand",adminAuth,uploads.single("image"),brandController.addBrand)
-router.get("/blockBrand",adminAuth,brandController.blockBrand)
-router.get("/unblockBrand",adminAuth,brandController.unblockBrand)
-router.get("/deleteBrand",adminAuth,brandController.deleteBrand)
+router.post("/blockBrand",adminAuth,brandController.blockBrand)
+router.post("/unblockBrand",adminAuth,brandController.unblockBrand)
+router.delete("/deleteBrand",adminAuth,brandController.deleteBrand)
 //product management
 router.get("/addProducts",adminAuth,productController.getProductAddPage)
 router.post("/addProducts",adminAuth,uploads.array("images",4),productController.addProducts)
 router.get("/products",adminAuth,productController.getAllProducts)
 router.post("/addProductOffer",adminAuth,productController.addProductOffer)
 router.post("/removeProductOffer",adminAuth,productController.removeProductOffer)
-router.get("/blockProduct",adminAuth,productController.blockProduct)
-router.get("/unblockProduct",adminAuth,productController.unblockProduct)
+router.post("/blockProduct",adminAuth,productController.blockProduct)
+router.post("/unblockProduct",adminAuth,productController.unblockProduct)
 router.get("/editProduct",adminAuth,productController.getEditProduct)
 router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct)
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage)
@@ -67,7 +67,7 @@ router.post('/updateStock',adminAuth,stockController.updateStock)
 //coupon management
 router.get('/coupons',adminAuth,couponController.getCouponPage);
 router.post('/save-coupon',adminAuth,couponController.addCoupon);
-router.get('/delete-coupon',adminAuth,couponController.deleteCoupon);
+router.delete('/delete-coupon',adminAuth,couponController.deleteCoupon);
 //sales
 router.get('/salesReport',adminAuth,salesController.showSaleReport)
 router.get('/downloadSalesPDF',adminAuth,salesController.saleReportPDF)

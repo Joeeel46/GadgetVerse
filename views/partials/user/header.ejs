@@ -2,245 +2,206 @@
 <html class="no-js" lang="en">
 
 <head>
-    <!-- Head content remains the same -->
     <meta charset="utf-8">
     <title>Gadget Verse - Your Ultimate Destination for Smart Choices!</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="/evara-user/assets/imgs/theme/logo.svg">
     <link rel="stylesheet" href="/evara-user/assets/css/main.css?v=3.4">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-</head>
-
-<style>
-    /* Basic reset and common styles */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    /* Header middle section styles */
-    .header-middle {
-        background-color: #f7f7f7;
-        padding: 20px 0;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 15px;
-    }
-
-    .header-wrap {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-    }
-
-    /* Logo styles */
-    .logo.logo-width-1 {
-        flex: 0 0 150px;
-        /* Adjust width as needed */
-    }
-
-    .logo.logo-width-1 img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    /* Cart and Wishlist styles */
-    .header-right {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: space-around;
-    }
-
-    .header-action-right {
-        display: flex;
-        gap: 20px;
-    }
-
-    .header-action-icon-2 {
-        display: flex;
-        align-items: center;
-    }
-
-    .header-action-icon-2 img {
-        width: 24px;
-        height: 24px;
-    }
-
-    /* Navigation menu styles */
-    .header-bottom {
-        background-color: #fff;
-        border-bottom: 1px solid #eee;
-        position: relative;
-    }
-
-    .main-menu {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 15px 0;
-    }
-
-    .main-menu nav ul {
-        display: flex;
-        list-style: none;
-        gap: 50px;
-        /* Increased gap between menu items */
-        margin: 0;
-        padding: 0;
-        justify-content: center;
-    }
-
-    .main-menu nav ul li a {
-        text-decoration: none;
-        color: #333;
-        font-weight: 600;
-        font-size: 16px;
-        transition: color 0.3s ease;
-        padding: 10px 0;
-        display: block;
-    }
-
-    .main-menu nav ul li a:hover {
-        color: #ff7f50;
-    }
-
-    /* User menu styles */
-    .user-menu {
-        list-style: none;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .dropdown-menu {
-        position: absolute;
-        background: #fff;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        display: none;
-        z-index: 1000;
-        min-width: 150px;
-        border-radius: 4px;
-    }
-
-    .dropdown-menu li {
-        padding: 10px 15px;
-    }
-
-    .dropdown-menu li a {
-        color: #333;
-        text-decoration: none;
-        display: block;
-    }
-
-    /* Mobile responsiveness */
-    @media (max-width: 991px) {
-        .d-lg-none {
-            display: none !important;
-        }
-    }
-
-
-    .header-action-icon-2.cart-container {
-        position: relative;
-    }
-
-    /* Removed styling for mini-cart-icon to preserve original appearance */
-
-    .view-checkout-btn {
-        position: absolute;
-        top: calc(100% + 10px);
-        right: 50%;
-        transform: translateX(50%);
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        padding: 2px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 100;
-    }
-
-    /* Show dropdown on cart hover OR when dropdown itself is hovered */
-    .cart-container:hover .view-checkout-btn,
-    .view-checkout-btn:hover {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .view-checkout-btn::before {
-        content: '';
-        position: absolute;
-        top: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 12px;
-        height: 12px;
-        background: white;
-        transform-origin: center;
-        rotate: 45deg;
-        box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    .view-checkout-btn a {
-        display: block;
-        padding: 12px 24px;
-        color: #333;
-        text-decoration: none;
-        white-space: nowrap;
-        font-weight: 500;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        background: linear-gradient(to right, #f8f8f8 50%, white 50%);
-        background-size: 200% 100%;
-        background-position: right bottom;
-    }
-
-    .view-checkout-btn a:hover {
-        background-position: left bottom;
-        color: #000;
-    }
-
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-</style>
+    <style>
+
+        
+        
+        /* Custom Styles */
+        .header-middle {
+            background-color: #f7f7f7;
+            padding: 20px 0;
+        }
+
+        .header-action-icon-2 img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .header-bottom {
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .main-menu nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 50px;
+        }
+
+        .main-menu nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .main-menu nav ul li a:hover {
+            color: #ff7f50;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+
+        .dropdown-menu li {
+            padding: 10px 15px;
+        }
+
+        .dropdown-menu li a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        .header-action-icon-2.cart-container {
+            position: relative;
+        }
+
+        .view-checkout-btn {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 50%;
+            transform: translateX(50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 2px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .cart-container:hover .view-checkout-btn,
+        .view-checkout-btn:hover {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .view-checkout-btn::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            transform-origin: center;
+            rotate: 45deg;
+            box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .view-checkout-btn a {
+            display: block;
+            padding: 12px 24px;
+            color: #333;
+            text-decoration: none;
+            white-space: nowrap;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            background: linear-gradient(to right, #f8f8f8 50%, white 50%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+        }
+
+        .view-checkout-btn a:hover {
+            background-position: left bottom;
+            color: #000;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 991.98px) {
+            .main-menu nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header-middle,
+            .header-bottom {
+                padding: 10px 0;
+            }
+
+            .header-action-right {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .navbar-toggler {
+                border: none;
+                outline: none;
+                box-shadow: none;
+            }
+
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+        }
+        
+        .header-right {
+            display: flex;
+        }
+
+        .responsive-menu {
+            display: none; /* Hide by default */
+        }
+
+        @media (max-width: 789px) {
+            .responsive-menu {
+                display: block; /* Show only when screen width is 789px or less */
+            }
+        }
+        
+    </style>
+</head>
 
 <body>
     <header class="header-area">
-        <!-- User menu section -->
+        <!-- User Menu Section -->
         <div class="header-top header-top-ptb-1 d-none d-lg-block">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-xl-3 col-lg-4">
-                        <div class="header-info">
-                        </div>
+                        <div class="header-info"></div>
                     </div>
-                    <div class="col-xl-6 col-lg-4">
-                    </div>
+                    <div class="col-xl-6 col-lg-4"></div>
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info header-info-right">
-                            <ul class="user-menu">
+                            <ul class="user-menu list-unstyled d-flex gap-3 mb-0">
                                 <% if (locals.user) { %>
                                     <li class="dropdown">
-                                        <a href="#" class="sign-in-link dropdown-toggle" id="userDropdown"
-                                            onclick="toggleDropdown()">
+                                        <a href="#" class="sign-in-link dropdown-toggle" id="userDropdown" onclick="toggleDropdown()">
                                             <i class="fi-rs-user"></i>
                                             <%= locals.user.name %>
                                         </a>
                                         <ul class="dropdown-menu" id="dropdownContent">
-                                            <li><a href="/userProfile"><i class="fi-rs-user-circle"></i> Profile</a>
-                                            </li>
+                                            <li><a href="/userProfile"><i class="fi-rs-user-circle"></i> Profile</a></li>
                                             <li><a href="/logout"><i class="fi-rs-sign-out"></i> Logout</a></li>
                                         </ul>
                                     </li>
-                                    <% } else { %>
-                                        <li><a href="/login"><i class="fi-rs-user"></i> Login</a></li>
-                                        <li><a href="/signup"><i class="fi-rs-user-plus"></i> Sign Up</a></li>
-                                        <% } %>
+                                <% } else { %>
+                                    <li><a href="/login"><i class="fi-rs-user"></i> Login</a></li>
+                                    <li><a href="/signup"><i class="fi-rs-user-plus"></i> Sign Up</a></li>
+                                <% } %>
                             </ul>
                         </div>
                     </div>
@@ -248,10 +209,10 @@
             </div>
         </div>
 
-        <!-- Logo and Cart section -->
+        <!-- Logo and Cart Section -->
         <div class="header-middle header-middle-ptb-1 d-none d-lg-flex">
-            <div class="container d-flex">
-                <div class="header-wrap" style="width: 100%">
+            <div class="container">
+                <div class="header-wrap d-flex justify-content-between align-items-center">
                     <!-- Logo -->
                     <div class="logo logo-width-1">
                         <a href="/">
@@ -261,21 +222,18 @@
 
                     <!-- Cart and Wishlist -->
                     <div class="header-right" style="width: 900px; display: flex; justify-content: flex-end;">
-                        <div class="header-action-right">
-                            <div class="header-action-2">
-                                <div class="header-action-icon-2">
-                                    <a href="/wishlist">
-                                        <img class="svgInject" alt="Wishlist"
-                                            src="/evara-user/assets/imgs/theme/icons/icon-heart.svg">
-                                    </a>
-                                </div>
-                                <div class="header-action-icon-2 cart-container">
-                                    <a class="mini-cart-icon" href="/cart">
-                                        <img alt="Cart" src="/evara-user/assets/imgs/theme/icons/icon-cart.svg">
-                                    </a>
-                                    <div class="view-checkout-btn">
-                                        <a href="/checkout">View Checkout</a>
-                                    </div>
+                        <div class="header-action-right d-flex gap-3">
+                            <div class="header-action-icon-2">
+                                <a href="/wishlist">
+                                    <img class="svgInject" alt="Wishlist" src="/evara-user/assets/imgs/theme/icons/icon-heart.svg">
+                                </a>
+                            </div>
+                            <div class="header-action-icon-2 cart-container">
+                                <a class="mini-cart-icon" href="/cart">
+                                    <img alt="Cart" src="/evara-user/assets/imgs/theme/icons/icon-cart.svg">
+                                </a>
+                                <div class="view-checkout-btn">
+                                    <a href="/checkout">View Checkout</a>
                                 </div>
                             </div>
                         </div>
@@ -287,28 +245,44 @@
         <!-- Navigation Menu -->
         <div class="header-bottom header-bottom-bg-color sticky-bar">
             <div class="container">
-                <div class="header-wrap" style="display: flex; justify-content: center;">
+                <nav class="navbar navbar-expand-lg navbar-light p-0">
+                    <!-- Mobile Toggler -->
+                    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <!-- Logo for Mobile -->
                     <div class="logo logo-width-1 d-block d-lg-none">
                         <a href="/">
                             <img src="/evara-user/assets/imgs/theme/logo.svg" alt="logo">
                         </a>
                     </div>
-                    <div class="header-nav d-none d-lg-flex">
-                        <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
-                            <nav>
-                                <ul>
-                                    <li><a href="/">Home</a></li>
-                                    <li><a href="/about-us">About</a></li>
-                                    <li><a href="/shop">Shop</a></li>
-                                </ul>
-                            </nav>
-                        </div>
+
+                    <!-- Navigation Links -->
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav mx-auto">
+                            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/about-us">About</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/shop">Shop</a></li>
+                            <li class="nav-item responsive-menu">
+                                <% if (locals.user) { %>
+                                    <a class="nav-link" href="/userProfile">Profile</a>
+                                    <a class="nav-link" href="/logout">Logout</a>
+                                <% } else { %>
+                                    <a class="nav-link" href="/login">Login</a>
+                                    <a class="nav-link" href="/signup">Sign Up</a>
+                                <% } %>
+                            </li>
+                        </ul>
                     </div>
-                </div>
+                </nav>
             </div>
         </div>
     </header>
 
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function toggleDropdown() {
@@ -320,40 +294,33 @@
                 }
             });
         }
-        // Initial counts
+
+        // Example: Update counters for demonstration
         let cartCount = 0;
         let wishlistCount = 0;
 
-        // Update cart counter
         function updateCartCounter(newCount) {
             cartCount = newCount;
             const cartCounterElement = document.querySelector('.cart-counter');
-            if (cartCount > 0) {
+            if (cartCounterElement) {
                 cartCounterElement.textContent = cartCount;
-                cartCounterElement.style.visibility = 'visible';
-            } else {
-                cartCounterElement.style.visibility = 'hidden';
+                cartCounterElement.style.visibility = cartCount > 0 ? 'visible' : 'hidden';
             }
         }
 
-        // Update wishlist counter
         function updateWishlistCounter(newCount) {
             wishlistCount = newCount;
             const wishlistCounterElement = document.querySelector('.wishlist-counter');
-            if (wishlistCount > 0) {
+            if (wishlistCounterElement) {
                 wishlistCounterElement.textContent = wishlistCount;
-                wishlistCounterElement.style.visibility = 'visible';
-            } else {
-                wishlistCounterElement.style.visibility = 'hidden';
+                wishlistCounterElement.style.visibility = wishlistCount > 0 ? 'visible' : 'hidden';
             }
         }
 
-        // Example: Increment counters for demonstration
+        // Simulate dynamic updates
         setInterval(() => {
-            const randomCartCount = Math.floor(Math.random() * 10); // Random number between 0-9
-            const randomWishlistCount = Math.floor(Math.random() * 10); // Random number between 0-9
-            updateCartCounter(randomCartCount);
-            updateWishlistCounter(randomWishlistCount);
-        }, 3000); // Update every 3 seconds
+            updateCartCounter(Math.floor(Math.random() * 10));
+            updateWishlistCounter(Math.floor(Math.random() * 10));
+        }, 3000);
     </script>
 </body>

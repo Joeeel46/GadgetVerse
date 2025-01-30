@@ -27,15 +27,15 @@
                     <td><%= data[i].productName %></td>
                     <td><%= data[i].brand %></td>
                     <td><%= data[i].category.name %></td>
-                    <td><%= data[i].salePrice %></td>
-                    <td>
+                    <td id="salePrice-<%= data[i]._id %>"><%= data[i].salePrice %></td>
+                    <td id="offer-<%= data[i]._id %>">
                         <% if (data[i].productOffer) { %>
                         <%= data[i].productOffer %>%
                         <% } else { %>
                             0%
                         <% } %>
                     </td>
-                    <td>
+                    <td id="offer-button-<%= data[i]._id %>">
                         <% if (data[i].productOffer === 0) { %>
                         <button class="btn btn-info" onclick="addOffer('<%= data[i]._id %>')" style="width: 100px;">
                             <a href="#" class="text-white">Add Offer</a>
@@ -47,15 +47,15 @@
                         <% } %>
                     </td>
                     <td><%= data[i].quantity %></td>
-                    <td>
+                    <td id="block-button-<%= data[i]._id %>">
                         <% if (data[i].isBlocked === false) { %>
-                        <button class="btn btn-danger" style="width: 80px;">
-                            <a href="/admin/blockProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration:none;">Block</a>
-                        </button>
+                            <button class="btn btn-danger" onclick="blockProduct('<%= data[i]._id %>')" style="width: 80px;">
+                                <a href="#" class="text-white" style="text-decoration:none;">Block</a>
+                            </button>
                         <% } else { %>
-                        <button class="btn btn-success" style="width: 80px;">
-                            <a href="/admin/unblockProduct?id=<%= data[i]._id %>" class="text-white">UnBlock</a>
-                        </button>
+                            <button class="btn btn-success" onclick="unblockProduct('<%= data[i]._id %>')" style="width: 80px;">
+                                <a href="#" class="text-white">Unblock</a>
+                            </button>
                         <% } %>
                     </td>
                     <td class="text-end">
@@ -71,100 +71,164 @@
     </div>
 </div>
 
-<div class="pagination-area mt-30 mb-50">
+<div class="pagination-area mt-15 mb-50">
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
-            <% for (let i = 1; i <= totalPages; i++) { %>
+            <% for (let i=1; i <=totalPages; i++) { %>
                 <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                    <a class="page-link" href="?page=<%= i %>">
+                        <%= i %>
+                    </a>
                 </li>
-            <% } %>
+                <% } %>
         </ul>
     </nav>
 </div><br>
 <script>
 
-    async function addOffer(productId) {
-        const {value:amount} = await Swal.fire({
+function addOffer(productId) {
+    Swal.fire({
+        title: "Enter Offer Percentage",
+        input: "number",
+        inputAttributes: {
+            min: 1,
+            max: 100
+        },
+        showCancelButton: true,
+        confirmButtonText: "Apply Offer"
+    }).then((result) => {
+        if (result.isConfirmed && result.value > 0) {
+            $.ajax({
+                url: "/admin/addProductOffer",
+                method: "POST",
+                data: { id: productId, offer: result.value },
+                success: function (response) {
+                    if (response.status) {
+                        // Update Offer Column
+                        $(`#offer-${productId}`).text(response.newOffer + "%");
 
-            title:'Offer in percentage',
-            input:'number',
-            inputLabel:'percentage',
-            inputPlaceholder:'%',
+                        // Update Sale Price Column
+                        $(`#salePrice-${productId}`).text("₹" + response.newSalePrice);
 
-        })
-        if (amount > 99 || amount < 1) {
-            Swal.fire({
-                icon: "warning",
-                text: "Use from 1% to 99%"
+                        // Change Button to Remove Offer
+                        $(`#offer-button-${productId}`).html(`
+                            <button class="btn btn-info" onclick="removeOffer('${productId}')" style="width: 100px;">
+                                <a href="#" class="text-white">Remove</a>
+                            </button>
+                        `);
+
+                        Swal.fire("Offer Applied!", "The offer has been added successfully.", "success");
+                    } else {
+                        Swal.fire("Error!", "Something went wrong.", "error");
+                    }
+                }
             });
-            return;
         }
-        
-        $.ajax({
-            url:"/admin/addProductOffer",
-            method:'post',
-            data:{
-                percentage:amount,
-                productId:productId
-            },
-            success:(response)=>{
-                if(response.status === true){
-                    location.reload()
-                    Swal.fire('Offer added',"The offer has been removed","success")
-                }else{
-                    alert('Failed')
+    });
+}
+
+function removeOffer(productId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This will remove the offer!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Yes, Remove it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "/admin/removeProductOffer",
+                method: "POST",
+                data: { id: productId },
+                success: function (response) {
+                    if (response.status) {
+                        // Reset Offer Column
+                        $(`#offer-${productId}`).text("0%");
+
+                        // Reset Sale Price Column
+                        $(`#salePrice-${productId}`).text("₹" + response.originalSalePrice);
+
+                        // Change Button to Add Offer
+                        $(`#offer-button-${productId}`).html(`
+                            <button class="btn btn-info" onclick="addOffer('${productId}')" style="width: 100px;">
+                                <a href="#" class="text-white">Add Offer</a>
+                            </button>
+                        `);
+
+                        Swal.fire("Offer Removed!", "The offer has been removed successfully.", "success");
+                    } else {
+                        Swal.fire("Error!", "Something went wrong.", "error");
+                    }
                 }
-            }
-        })
-    }
-
-
-
-    function removeOffer(productId){
-        try {
-            Swal.fire({
-
-                title:'Remove Offer',
-                text:'Are you sure you want to remove this offer',
-                icon:'warning',
-                showCancelButton:true,
-                confirmButtonColor:'#3085d6',
-                confirmButtonText:'Yes,remove it!',
-                timer:5000,
-                timerProgressBar:true
-
-            }).then(async (result)=>{
-                if(result.isConfirmed){
-                    $.ajax({
-
-                        url:"/admin/removeProductOffer",
-                        method:'post',
-                        data:{
-                            productId:productId
-                        },
-                        success:(response)=>{
-                            console.log(response);
-                            
-                            if(response.status===true){
-                                Swal.fire('Removed!','The offer has been removed','success')
-                                location.reload()
-
-                            }else if(response.status===false){
-                                Swal.fire('failed')
-                            }else{
-                                alert('Failed')
-                            }
-                        }
-                    })
-                }
-            })
-        } catch (error) {
-            console.error(error)
+            });
         }
-    }
+    });
+}
 
+function blockProduct(productId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This product will be blocked!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Yes, block it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "/admin/blockProduct",
+                method: "POST",
+                data: { id: productId },
+                success: function (response) {
+                    if (response.status === true) {
+                        // Change the button dynamically to Unblock
+                        $(`#block-button-${productId}`).html(`
+                            <button class="btn btn-success" onclick="unblockProduct('${productId}')" style="width: 80px;">
+                                <a href="#" class="text-white">Unblock</a>
+                            </button>
+                        `);
+                        Swal.fire("Blocked!", "The product has been blocked.", "success");
+                    } else {
+                        Swal.fire("Error!", "Something went wrong.", "error");
+                    }
+                }
+            });
+        }
+    });
+}
 
+function unblockProduct(productId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This product will be unblocked!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        confirmButtonText: "Yes, unblock it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "/admin/unblockProduct",
+                method: "POST",
+                data: { id: productId },
+                success: function (response) {
+                    if (response.status === true) {
+                        // Change the button dynamically to Block
+                        $(`#block-button-${productId}`).html(`
+                            <button class="btn btn-danger" onclick="blockProduct('${productId}')" style="width: 80px;">
+                                <a href="#" class="text-white">Block</a>
+                            </button>
+                        `);
+                        Swal.fire("Unblocked!", "The product has been unblocked.", "success");
+                    } else {
+                        Swal.fire("Error!", "Something went wrong.", "error");
+                    }
+                }
+            });
+        }
+    });
+}
 
 
 </script>

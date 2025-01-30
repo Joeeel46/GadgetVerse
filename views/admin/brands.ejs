@@ -56,7 +56,7 @@
                 </thead>
                 <tbody>
                   <% data.reverse().forEach((brand, index) => { %>
-                    <tr>
+                    <tr id="brand-row-<%= brand._id %>">
                       <!-- Brand Name -->
                       <td class="text-start">
                         <%= brand.brandName %>
@@ -75,32 +75,30 @@
           
                       <!-- Status -->
                       <td class="text-center">
-                        <% if (brand.isBlocked) { %>
-                          <span class="badge rounded-pill bg-danger" style="width: 70px;">Blocked</span>
-                        <% } else { %>
-                          <span class="badge rounded-pill bg-success" style="width: 70px;">Active</span>
-                        <% } %>
+                        <span id="status-<%= brand._id %>" 
+                              class="badge rounded-pill <%= brand.isBlocked ? 'bg-danger' : 'bg-success' %>" 
+                              style="width: 70px;">
+                          <%= brand.isBlocked ? 'Blocked' : 'Active' %>
+                        </span>
                       </td>
-          
+
                       <!-- Block/Unblock Button -->
                       <td class="text-center">
-                        <% if (brand.isBlocked) { %>
-                          <a href="/admin/unblockBrand?id=<%= brand._id %>" 
-                             class="btn btn-success text-white btn-sm"
-                             style="width: 100px;">Unblock</a>
-                        <% } else { %>
-                          <a href="/admin/blockBrand?id=<%= brand._id %>" 
-                             class="btn btn-danger text-white btn-sm"
-                             style="width: 100px;">Block</a>
-                        <% } %>
+                        <button id="toggle-btn-<%= brand._id %>" 
+                                class="btn <%= brand.isBlocked ? 'btn-success' : 'btn-danger' %> text-white btn-sm" 
+                                style="width: 100px;" 
+                                onclick="toggleBlock('<%= brand._id %>', '<%= brand.isBlocked %>')">
+                          <%= brand.isBlocked ? 'Unblock' : 'Block' %>
+                        </button>
                       </td>
-          
+
                       <!-- Delete Button -->
                       <td class="text-end">
-                        <button 
-                          class="btn btn-danger text-white btn-sm" 
-                          style="width: 100px;" 
-                          onclick="confirmDelete('<%= brand._id %>')">Delete</button>
+                        <button class="btn btn-danger text-white btn-sm" 
+                                style="width: 100px;" 
+                                onclick="deleteBrand('<%= brand._id %>')">
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   <% }) %>
@@ -113,22 +111,109 @@
       </div>
     </div>
 
-    <div class="pagination-area mt-30 mb-50">
+    <div class="pagination-area mt-15 mb-50">
       <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-          <%for(let i=1;i<=totalPages;i++){%>
-            <li class="page-item">
-              <a class="page-link <%= (i===currentPage) ? 'active' : '' %>" href="?page=<%=i%>">
-                <%=i%>
-              </a>
-            </li>
-            <%}%>
-        </ul>
+          <ul class="pagination justify-content-center">
+              <% for (let i=1; i <=totalPages; i++) { %>
+                  <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                      <a class="page-link" href="?page=<%= i %>">
+                          <%= i %>
+                      </a>
+                  </li>
+                  <% } %>
+          </ul>
       </nav>
-    </div>
+  </div>
   </section>
 
   <script>
+
+    // Function to toggle block/unblock
+  function toggleBlock(id, isBlocked) {
+    fetch(`/admin/${isBlocked ? 'unblockBrand' : 'blockBrand'}?id=` + id, {
+      method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update UI
+        const statusBadge = document.getElementById(`status-${id}`);
+        const toggleBtn = document.getElementById(`toggle-btn-${id}`);
+        
+        if (data.isBlocked) {
+          statusBadge.textContent = "Blocked";
+          statusBadge.className = "badge rounded-pill bg-danger";
+          toggleBtn.textContent = "Unblock";
+          toggleBtn.className = "btn btn-success text-white btn-sm";
+        } else {
+          statusBadge.textContent = "Active";
+          statusBadge.className = "badge rounded-pill bg-success";
+          toggleBtn.textContent = "Block";
+          toggleBtn.className = "btn btn-danger text-white btn-sm";
+        }
+        
+        // Update onclick attribute dynamically
+        toggleBtn.setAttribute("onclick", `toggleBlock('${id}', ${data.isBlocked})`);
+      }
+    })
+    .catch(error => console.error("Error:", error));
+  }
+
+  // Function to delete a brand
+  function deleteBrand(id) {
+    // Use SweetAlert for confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true // This swaps the cancel and confirm buttons
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with the DELETE request if confirmed
+            fetch(`/admin/deleteBrand?id=` + id, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // SweetAlert success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The brand has been deleted successfully.',
+                        confirmButtonText: 'OK',
+                    });
+
+                    // Remove the row dynamically
+                    document.getElementById(`brand-row-${id}`).remove();
+                } else {
+                    // SweetAlert error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. The brand could not be deleted.',
+                        confirmButtonText: 'Try Again',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                
+                // SweetAlert error for network issues or other errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again later.',
+                    confirmButtonText: 'OK',
+                });
+            });
+        }
+    });
+}
+
     function validateAndPreviewImage(event) {
   const file = event.target.files[0];
   const preview = document.getElementById("preview");

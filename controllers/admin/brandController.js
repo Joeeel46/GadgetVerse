@@ -7,7 +7,7 @@ const { message } = require("statuses")
 
 const getBrandPage = async (req,res)=>{
     try {
-        const page = parseInt(req.query.page)
+        const page = parseInt(req.query.page) || 1
         const limit = 4
         const skip = (page-1)*limit
         const brandData = await Brand.find({}).sort({createdAt:-1}).skip(skip).limit(limit)
@@ -27,11 +27,18 @@ const getBrandPage = async (req,res)=>{
 
 const addBrand = async (req,res)=>{
     try {
-        const brand = req.body.name;
-        const findBrand = await Brand.findOne({ brandName: brand });
+        const brand = req.body.name?.trim();
+
+        if (!brand) {
+            return res.status(400).json({ message: "Brand name cannot be empty!" });
+        }else if(brand.length < 4){
+            return res.status(400).json({ message: "Brand name too short!" });
+        }
+        
+        const findBrand = await Brand.findOne({ brandName: { $regex: brand, $options: 'i' } });
     
         if (!findBrand) {
-          const image = req.file ? req.file.filename : null; // Handle image upload
+          const image = req.file ? req.file.filename : null;
           const newBrand = new Brand({
             brandName: brand,
             brandImage: image
@@ -46,41 +53,40 @@ const addBrand = async (req,res)=>{
     }
 }
 
-const blockBrand = async (req,res)=>{
+const blockBrand = async (req, res) => {
     try {
-        const id = req.query.id
-        await Brand.updateOne({_id:id},{$set:{isBlocked:true}})
-        res.redirect("/admin/brands")
+        const id = req.query.id;
+        await Brand.updateOne({ _id: id }, { $set: { isBlocked: true } });
+        res.json({ success: true, isBlocked: true });
     } catch (error) {
-        res.redirect("/pageerror")
+        res.status(500).json({ success: false, message: "Error blocking brand" });
     }
-}
+};
 
-const unblockBrand = async (req,res)=>{
+const unblockBrand = async (req, res) => {
     try {
-        const id = req.query.id
-        await Brand.updateOne({_id:id},{$set:{isBlocked:false}})
-        res.redirect("/admin/brands")
+        const id = req.query.id;
+        await Brand.updateOne({ _id: id }, { $set: { isBlocked: false } });
+        res.json({ success: true, isBlocked: false });
     } catch (error) {
-        res.redirect("/pageerror")
+        res.status(500).json({ success: false, message: "Error unblocking brand" });
     }
-}
+};
 
-
-
-const deleteBrand = async (req,res)=>{
+const deleteBrand = async (req, res) => {
     try {
-        const {id} = req.query
-        if(!id){
-            return res.status(400).redirect("/pageerror")
+        const { id } = req.query;
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Brand ID is required" });
         }
-        await Brand.deleteOne({_id:id})
-        res.redirect("/admin/brands")
+        console.log('delete',id)
+        await Brand.deleteOne({ _id: id });
+        res.json({ success: true });
     } catch (error) {
-        console.log("Error deleting brand:",error)
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).redirect("/pageerror")
+        console.log("Error deleting brand:", error);
+        res.status(500).json({ success: false, message: "Error deleting brand" });
     }
-}
+};
 
 module.exports = {
     getBrandPage,

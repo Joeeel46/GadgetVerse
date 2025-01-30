@@ -257,9 +257,10 @@ const loadShoppingPage = async (req, res) => {
         const { sortBy, category } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = 15;
+        const skip = (page - 1) * limit;  // Moved skip calculation here
 
         // Prepare condition for filtering
-        const condition = category ? { category } : {};
+        const condition = category ? { category, isBlocked: false } : { isBlocked: false };
 
         // Determine sort criteria based on sortBy parameter
         let sortCriteria;
@@ -289,33 +290,39 @@ const loadShoppingPage = async (req, res) => {
                 sortCriteria = { createdOn: -1 };
         }
 
-        
-        const totalProducts = await Product.countDocuments(condition);
-        const totalPages = Math.ceil(totalProducts / limit);
-        const skip = (page - 1) * limit;
-
-     
-        const [products, categories] = await Promise.all([
+        // First, get all products that match the condition to calculate total
+        const [allProducts, categories] = await Promise.all([
             Product.find(condition)
-                .populate('category', ['name', 'categoryOffer'])
-                .sort(sortCriteria)
-                .skip(skip)
-                .limit(limit)
+                .populate('category', ['name', 'categoryOffer', 'isListed'])
                 .lean(),
             Category.find()
         ]);
 
-        
+        // Filter listed products
+        const listedProducts = allProducts.filter(item => item.category.isListed);
+        const totalProducts = listedProducts.length;
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        // Get paginated products
+        const paginatedProducts = await Product.find(condition)
+            .populate('category', ['name', 'categoryOffer', 'isListed'])
+            .sort(sortCriteria)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        // Filter listed products for pagination
+        const items = paginatedProducts.filter(item => item.category.isListed);
+
         if (req.xhr) {
-            return res.render('product-grid', { 
-                products,
-                layout: false 
+            return res.render('product-grid', {
+                products:items,
+                layout: false
             });
         }
 
-        
         res.render('shop', {
-            products,
+            products: items,
             category: categories,
             categories,
             totalPages,
@@ -325,7 +332,7 @@ const loadShoppingPage = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error in getSortedPage:', error);
+        console.error('Error in loadShoppingPage:', error);
         res.status(500).render('error', { message: 'Internal server error' });
     }
 };
@@ -351,7 +358,7 @@ const liveSearch = async (req, res) => {
 
 const searchAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().limit(10); // Limit to avoid overload
+        const products = await Product.find().limit(10);
         return res.json({ products });
     } catch (err) {
         console.error(err);

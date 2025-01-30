@@ -80,6 +80,7 @@
                                     <input placeholder="" name="quantity" type="text" class="form-control border">
                                     <div id="quantity-error" class="error-message"></div>
                                 </div>
+                                <div id="salePrice-errorrr" class="error-message"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -346,6 +347,15 @@ document.getElementById("input1").addEventListener("change", handleFileSelect);
     let isValid = true;
 
     // Validate each field
+
+    const quantityNumber = Number(quantity);
+
+    // Validate if it's a valid number and greater than zero
+    if (isNaN(quantityNumber) || quantityNumber <= 0) {
+        displayErrorMessage('salePrice-errorrr', 'Please enter a valid quantity.');
+        isValid = false;
+    }
+
     if (name.trim() === "") {
         displayErrorMessage('productName-error', 'Please enter a product name.');
         isValid = false;
@@ -353,11 +363,6 @@ document.getElementById("input1").addEventListener("change", handleFileSelect);
 
     if (description.trim() === "") {
         displayErrorMessage('description-error', 'Please enter a product description.');
-        isValid = false;
-    }
-
-    if (parseInt(quantity) < 0) {
-        displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
         isValid = false;
     }
 

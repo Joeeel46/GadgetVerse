@@ -6,6 +6,7 @@ const path = require("path")
 const User = require("../../models/userSchema")
 const sharp = require("sharp")
 const statusCodes = require("../../utils/statusCodes")
+const status = require("statuses")
 
 
 const getProductAddPage = async (req,res)=>{
@@ -124,64 +125,66 @@ const getAllProducts = async (req,res)=>{
     }
 }
 
-const addProductOffer = async(req,res)=>{
+const addProductOffer = async (req, res) => {
     try {
-        const {productId,percentage} = req.body
-        const findProduct = await Product.findOne({_id:productId})
-        const findCategory = await Category.findOne({_id:findProduct.category})
+        let { id, offer } = req.body;
+        let product = await Product.findById(id).populate('category');
+
         
-        if(findCategory.categoryOffer > percentage){
-            return res.json({status:false,message:"The products category already has a category offer"})
-        }
 
-        findProduct.salePrice = findProduct.salePrice-Math.floor(findProduct.salePrice * (percentage / 100))
-        findProduct.productOffer = parseInt(percentage)
-        await findProduct.save()
-        findCategory.categoryOffer=0
-        await findCategory.save()
-        
-        res.json({status:true})
+        let discount = (product.salePrice * offer) / 100;
+        let newSalePrice = product.salePrice - discount;
 
+        newSalePrice = Math.round(newSalePrice)
 
+        await Product.updateOne({ _id: id }, { 
+            $set: { productOffer: offer, salePrice: newSalePrice } 
+        });
+
+        res.json({ status: true, newOffer: offer, newSalePrice: newSalePrice });
     } catch (error) {
-        res.redirect("/pageerror")
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({status:false,message:"Internal Server Error"})
+        res.json({ status: false });
     }
-}
+};
 
-const removeProductOffer = async (req,res)=>{
+const removeProductOffer = async (req, res) => {
     try {
-        const {productId} = req.body
-        const findProduct = await Product.findOne({_id:productId})
-        const percentage = findProduct.productOffer
-        findProduct.salePrice = Math.ceil(findProduct.salePrice / (1 - (percentage / 100)));
-        findProduct.productOffer = 0 
-        await findProduct.save()
-        res.json({status:true})
-    } catch (error) {
-        res.redirect("/pageerror")
-    }
-}
+        let id = req.body.id;
+        let product = await Product.findById(id);
 
-const blockProduct = async(req,res)=>{
-    try {
-        let id = req.query.id
-        await Product.updateOne({_id:id},{$set:{isBlocked:true}})
-        res.redirect("/admin/products")
-    } catch (error) {
-        res.redirect("/pageerror")
-    }
-}
+        let originalPrice = product.salePrice / (1 - product.productOffer / 100);
 
-const unblockProduct = async(req,res)=>{
-    try {
-        let id = req.query.id
-        await Product.updateOne({_id:id},{$set:{isBlocked:false}})
-        res.redirect("/admin/products")
+        originalPrice = Math.round(originalPrice)
+
+        await Product.updateOne({ _id: id }, { 
+            $set: { productOffer: 0, salePrice: originalPrice } 
+        });
+
+        res.json({ status: true, originalSalePrice: originalPrice });
     } catch (error) {
-        res.redirect("/pageerror")
+        res.json({ status: false });
     }
-}
+};
+
+const blockProduct = async (req, res) => {
+    try {
+        let id = req.body.id;
+        await Product.updateOne({ _id: id }, { $set: { isBlocked: true } });
+        res.json({ status: true });
+    } catch (error) {
+        res.json({ status: false });
+    }
+};
+
+const unblockProduct = async (req, res) => {
+    try {
+        let id = req.body.id;
+        await Product.updateOne({ _id: id }, { $set: { isBlocked: false } });
+        res.json({ status: true });
+    } catch (error) {
+        res.json({ status: false });
+    }
+};
 
 // const blockunblock = async (req,res)=> {
 

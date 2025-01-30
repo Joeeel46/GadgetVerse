@@ -1,337 +1,318 @@
 <%- include("../../views/partials/user/header") %>
 
-    <style>
-        /* Base styles for the badge */
-        .new-badge {
-            display: inline-block;
-            position: relative;
-            padding: 5px 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(90deg, #00c6ff, #0072ff);
-            border-radius: 20px;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(0, 114, 255, 0.8);
-            animation: pulse 2s infinite;
-        }
+<style>
+    /* Base styles for the badge */
+    .new-badge {
+        display: inline-block;
+        position: relative;
+        padding: 5px 10px;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(90deg, #00c6ff, #0072ff);
+        border-radius: 20px;
+        text-transform: uppercase;
+        box-shadow: 0 0 10px rgba(0, 114, 255, 0.8);
+        animation: pulse 2s infinite;
+    }
 
-        /* Create fire-like effect using pseudo-elements */
-        .new-badge::before,
-        .new-badge::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 200, 255, 0.5);
-            border-radius: 50%;
+    /* Create fire-like effect using pseudo-elements */
+    .new-badge::before,
+    .new-badge::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 200, 255, 0.5);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        z-index: -1;
+        animation: fire-animation 1.5s infinite ease-in-out;
+    }
+
+    .new-badge::after {
+        background: rgba(0, 150, 255, 0.3);
+        animation-delay: 0.5s;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 10px rgba(0, 114, 255, 0.8), 0 0 20px rgba(0, 200, 255, 0.6);
+        }
+        50% {
+            box-shadow: 0 0 15px rgba(0, 114, 255, 1), 0 0 30px rgba(0, 200, 255, 0.8);
+        }
+    }
+
+    @keyframes fire-animation {
+        0%, 100% {
             transform: translate(-50%, -50%) scale(1);
-            z-index: -1;
-            animation: fire-animation 1.5s infinite ease-in-out;
+            opacity: 1;
         }
-
-        /* Second layer of fire */
-        .new-badge::after {
-            background: rgba(0, 150, 255, 0.3);
-            animation-delay: 0.5s;
+        50% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0.6;
         }
+    }
 
-        /* Animation for pulsating badge */
-        @keyframes pulse {
-
-            0%,
-            100% {
-                box-shadow: 0 0 10px rgba(0, 114, 255, 0.8), 0 0 20px rgba(0, 200, 255, 0.6);
-            }
-
-            50% {
-                box-shadow: 0 0 15px rgba(0, 114, 255, 1), 0 0 30px rgba(0, 200, 255, 0.8);
-            }
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .hero-slider-content-2 {
+            text-align: center;
+            padding: 20px;
         }
-
-        /* Fire-like pulsating animation */
-        @keyframes fire-animation {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.5);
-                opacity: 0.6;
-            }
+        .hero-slider-content-2 h1 {
+            font-size: 2rem;
         }
-    </style>
+        .hero-slider-content-2 h4 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
 
-    <main class="main">
-        <section class="home-slider position-relative pt-50">
-            <div class="hero-slider-1 dot-style-1 dot-style-1-position-1">
-
-
-                <div class="single-hero-slider single-animation-wrap">
-                    <div class="container">
-                        <div class="row align-items-center slider-animated-1">
-                            <div class="col-lg-5 col-md-6">
-                                <div class="hero-slider-content-2">
-                                   
-                                    <h4 class="animated fw-900">Discover Our Premium Collection of Smartphones</h4>
-                                    <h1 class="animated fw-900 text-brand">Oneplus Open</h1>
-                                    <p class="animated">Unfold the Future with the Revolutionary</p>
-                                    <a class="animated btn btn-brush btn-brush-3" href="/productDetails?id=6763a4514f2cf1564602581b"> Shop Now </a>
-                                </div>
-                                
+<main class="main">
+    <section class="home-slider position-relative pt-50">
+        <div class="hero-slider-1 dot-style-1 dot-style-1-position-1">
+            <!-- First Slider -->
+            <div class="single-hero-slider single-animation-wrap">
+                <div class="container">
+                    <div class="row align-items-center slider-animated-1">
+                        <div class="col-12 col-md-6 col-lg-5 order-md-1 order-2">
+                            <div class="hero-slider-content-2 text-center text-md-start">
+                                <h4 class="animated fw-900">Discover Our Premium Collection of Smartphones</h4>
+                                <h1 class="animated fw-900 text-brand">Oneplus Open</h1>
+                                <p class="animated">Unfold the Future with the Revolutionary</p>
+                                <a class="animated btn btn-brush btn-brush-3" href="/productDetails?id=6763a4514f2cf1564602581b"> Shop Now </a>
                             </div>
-                            
-    
-                            <div class="col-lg-7 col-md-6">
-                                <div class="single-slider-img single-slider-img-1">
-                                    <video class="animated slider-1-1" autoplay muted loop style="width: 100%; height: auto;">
-                                        <source src="/evara-user/assets/vid/oneplusvid.mp4" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                            </div>
-                            
                         </div>
-                    </div>
-                </div>
-
-                
-                <div class="single-hero-slider single-animation-wrap">
-                    <div class="container">
-
-                        <div class="row align-items-center slider-animated-1">
-
-                            <div class="col-lg-7 col-md-6">
-                                <div class="single-slider-img single-slider-img-1">
-                                    <video class="animated slider-1-1" autoplay muted loop style="width: 100%; height: auto;">
-                                        <source src="/evara-user/assets/vid/16pro.mp4" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-5 col-md-6">
-                                <div class="hero-slider-content-2">
-                                    <h4 class="animated">Luxury That Lasts</h4>
-                                    <h1 class="animated fw-900 text-7">iPhone 16 Pro Max</h1>
-                                    <p class="animated">Unleash Ultimate Performance with the iPhone 16 Pro Max.</p>
-                                    <a class="animated btn btn-brush btn-brush-2" href="/productDetails?id=6757d76ce563f91391772170"> Shop Now </a>
-                                </div>
-                            </div>
-                            
-                        </div>
-                        
-                    </div>
-
-                </div>
-                <div class="single-hero-slider single-animation-wrap">
-                    <div class="container">
-                        <div class="row align-items-center slider-animated-1">
-                            <div class="col-lg-5 col-md-6">
-                                <div class="hero-slider-content-2">
-                                    <h4 class="animated">Explore Our Exclusive Range of Smartphones.</h4>
-                                    <h2 class="animated fw-900 text-7">Samsung S24 Ultra</h2>
-                                    <p class="animated">Precision Meets Prestige.</p>
-                                    <a class="animated btn btn-brush btn-brush-1" href="/productDetails?id=6757d81ae563f91391772178"> Shop Now </a>
-                                </div>
-                            </div>
-                            
-                            <div class="col-lg-7 col-md-6">
-                                <div class="single-slider-img single-slider-img-1">
-                                    <video class="animated slider-1-1" autoplay muted loop style="width: 100%; height: auto;">
-                                        <source src="/evara-user/assets/vid/samsung24ultraa.mp4" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
+                        <div class="col-12 col-md-6 col-lg-7 order-md-2 order-1">
+                            <div class="single-slider-img single-slider-img-1">
+                                <video class="animated slider-1-1 w-100" autoplay muted loop>
+                                    <source src="/evara-user/assets/vid/oneplusvid.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="slider-arrow hero-slider-1-arrow"></div>
-        </section>
-        
-        <section class="product-tabs section-padding position-relative wow fadeIn animated">
-            
-            <div class="container">
-                <div class="tab-header">
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="nav-tab-three" data-bs-toggle="tab" data-bs-target="#tab-three"
-                                type="button" role="tab" aria-controls="tab-three" aria-selected="false">New
-                                added</button>
-                        </li>
-                    </ul>
-                    <a href="/shop" class="view-more d-none d-md-flex">View More<i
-                            class="fi-rs-angle-double-small-right"></i></a>
+
+            <!-- Second Slider -->
+            <div class="single-hero-slider single-animation-wrap">
+                <div class="container">
+                    <div class="row align-items-center slider-animated-1">
+                        <div class="col-12 col-md-6 col-lg-7">
+                            <div class="single-slider-img single-slider-img-1">
+                                <video class="animated slider-1-1 w-100" autoplay muted loop>
+                                    <source src="/evara-user/assets/vid/16pro.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-5">
+                            <div class="hero-slider-content-2 text-center text-md-start">
+                                <h4 class="animated">Luxury That Lasts</h4>
+                                <h1 class="animated fw-900 text-7">iPhone 16 Pro Max</h1>
+                                <p class="animated">Unleash Ultimate Performance with the iPhone 16 Pro Max.</p>
+                                <a class="animated btn btn-brush btn-brush-2" href="/productDetails?id=6757d76ce563f91391772170"> Shop Now </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!--End nav-tabs-->
-                <div class="tab-content wow fadeIn animated" id="myTabContent">
-                    <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
-                        <div class="row product-grid-4">
-                            <% for (let i=0; i < products.length; i++) { %>
-                                <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                    <div class="product-cart-wrap mb-30">
-                                        <div class="product-img-action-wrap">
-                                            <div class="product-img product-img-zoom">
-                                                <a href="/productDetails?id=<%= products[i]._id %>">
-                                                    <img class="default-img"
-                                                        src="/uploads/re-image/<%= products[i].productImage[0] %>"
-                                                        alt="<%= products[i].productName %>">
-                                                </a>
-                                            </div>
-                                            <div class="product-action-1">
-                                                <a aria-label="Add To Wishlist"
-                                                    class="action-btn hover-up add-to-wishlist"
-                                                    data-product-id="<%= products[i]._id %>">
-                                                    <i class="fi-rs-heart"></i>
-                                                </a>
-                                            </div>
-                                            <div class="product-badges product-badges-position product-badges-mrg">
-                                                <span class="new-badge">New</span>
-                                            </div>
+            </div>
+
+            <!-- Third Slider -->
+            <div class="single-hero-slider single-animation-wrap">
+                <div class="container">
+                    <div class="row align-items-center slider-animated-1">
+                        <div class="col-12 col-md-6 col-lg-5 order-md-1 order-2">
+                            <div class="hero-slider-content-2 text-center text-md-start">
+                                <h4 class="animated">Explore Our Exclusive Range of Smartphones.</h4>
+                                <h2 class="animated fw-900 text-7">Samsung S24 Ultra</h2>
+                                <p class="animated">Precision Meets Prestige.</p>
+                                <a class="animated btn btn-brush btn-brush-1" href="/productDetails?id=6757d81ae563f91391772178"> Shop Now </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-7 order-md-2 order-1">
+                            <div class="single-slider-img single-slider-img-1">
+                                <video class="animated slider-1-1 w-100" autoplay muted loop>
+                                    <source src="/evara-user/assets/vid/samsung24ultraa.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slider-arrow hero-slider-1-arrow"></div>
+    </section>
+
+    <section class="product-tabs section-padding position-relative wow fadeIn animated">
+        <div class="container">
+            <div class="tab-header">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nav-tab-three" data-bs-toggle="tab" data-bs-target="#tab-three"
+                            type="button" role="tab" aria-controls="tab-three" aria-selected="false">New added</button>
+                    </li>
+                </ul>
+                <a href="/shop" class="view-more d-none d-md-flex">View More<i class="fi-rs-angle-double-small-right"></i></a>
+            </div>
+
+            <div class="tab-content wow fadeIn animated" id="myTabContent">
+                <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
+                    <div class="row product-grid-4">
+                        <% for (let i=0; i < products.length; i++) { %>
+                            <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="/productDetails?id=<%= products[i]._id %>">
+                                                <img class="default-img" src="/uploads/re-image/<%= products[i].productImage[0] %>"
+                                                    alt="<%= products[i].productName %>">
+                                            </a>
                                         </div>
-                                        <div class="product-content-wrap">
-                                            <div class="product-category">
-                                                <a href="shop-grid-right.html">
-                                                    <%= products[i].brand %>
-                                                </a>
-                                            </div>
-                                            <h2><a href="shop-product-right.html">
-                                                    <%= products[i].productName %>
-                                                </a></h2>
-                                            <div class="rating-result" title="90%">
-                                                <span>
-                                                    <span>90%</span>
-                                                </span>
-                                            </div>
-                                            
-                                            <div class="product-price">
-                                                <span class="current-price">₹<%= products[i].salePrice.toLocaleString() %></span>
-                                                <% if (products[i].regularPrice > products[i].salePrice) { %>
-                                                    <span class="old-price">₹<%= products[i].regularPrice.toLocaleString() %></span>
-                                                    <% if(products[i].category.categoryOffer || products[i].productOffer){ %>
-                                                        <span class="offer-badge">
-                                                            <span class="offer-text" style="font-size: 0.80rem;"><%= products[i].category.categoryOffer || products[i].productOffer %>% OFF</span>
+                                        <div class="product-action-1">
+                                            <a aria-label="Add To Wishlist" class="action-btn hover-up add-to-wishlist"
+                                                data-product-id="<%= products[i]._id %>">
+                                                <i class="fi-rs-heart"></i>
+                                            </a>
+                                        </div>
+                                        <div class="product-badges product-badges-position product-badges-mrg">
+                                            <span class="new-badge">New</span>
+                                        </div>
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-category">
+                                            <a href="shop-grid-right.html"><%= products[i].brand %></a>
+                                        </div>
+                                        <h2><a href="shop-product-right.html"><%= products[i].productName %></a></h2>
+                                        <div class="rating-result" title="90%">
+                                            <span>
+                                                <span>90%</span>
+                                            </span>
+                                        </div>
+                                        <div class="product-price">
+                                            <span class="current-price">₹<%= products[i].salePrice.toLocaleString() %></span>
+                                            <% if (products[i].regularPrice > products[i].salePrice) { %>
+                                                <span class="old-price">₹<%= products[i].regularPrice.toLocaleString() %></span>
+                                                <% if(products[i].category.categoryOffer || products[i].productOffer){ %>
+                                                    <span class="offer-badge">
+                                                        <span class="offer-text" style="font-size: 0.80rem;">
+                                                            <%= products[i].category.categoryOffer || products[i].productOffer %>% OFF
                                                         </span>
-                                                    <% } %>
+                                                    </span>
                                                 <% } %>
-                                            </div>
-                                            <div class="product-action-1 show">
-                                                <button onclick="addToCart('<%=products[i]._id%>')"
-                                                    aria-label="Add To Cart" class="action-btn hover-up">
-                                                    <i class="fi-rs-shopping-bag-add"></i>
-                                                </button>
-                                            </div>
+                                            <% } %>
+                                        </div>
+                                        <div class="product-action-1 show">
+                                            <button onclick="addToCart('<%=products[i]._id%>')"
+                                                aria-label="Add To Cart" class="action-btn hover-up">
+                                                <i class="fi-rs-shopping-bag-add"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                                <% } %>
-                        </div>
-                        <!--End product-grid-4-->
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+</main>
 
-    <script>
-        document.querySelectorAll('.add-to-wishlist').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                e.preventDefault();
-
-                const productId = button.getAttribute('data-product-id');
-
-                try {
-                    const response = await fetch('/addToWishList', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ product_id: productId })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        Swal.fire('Success', data.message, 'success');
-                    } else {
-                        Swal.fire('Error', data.error || 'Failed to add to wishlist', 'error');
-                    }
-                } catch (error) {
-                    Swal.fire('Error', 'Something went wrong', 'error');
-                    console.error('Error adding to wishlist:', error);
-                }
-            });
-        });
-
-        function addToCart(productId, quantity = 1) {
-            fetch(`/addToCart?productId=${productId}&quantity=${quantity}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 200) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else if (data.status === 400) {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Oops!',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    }else{
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: data.message || 'Something went wrong!',
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong!',
-                    });
+<script>
+    // Your existing JavaScript code remains unchanged
+    document.querySelectorAll('.add-to-wishlist').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const productId = button.getAttribute('data-product-id');
+            try {
+                const response = await fetch('/addToWishList', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ product_id: productId })
                 });
-        }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const paymentStatus = urlParams.get('paymentStatus');
-
-            if (paymentStatus === 'failed') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Payment Failed',
-                    text: 'The payment process failed. Please try again from your order list.',
-                    timer: 3000, // Display for 3 seconds
-                    showConfirmButton: false, // Hide the "OK" button
-                    timerProgressBar: true, // Show a progress bar
-                }).then(() => {
-                    // Clean up the URL after showing the alert
-                    window.history.replaceState(null, '', window.location.pathname);
-                });
+                const data = await response.json();
+                if (response.ok) {
+                    Swal.fire('Success', data.message, 'success');
+                } else {
+                    Swal.fire('Error', data.error || 'Failed to add to wishlist', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Something went wrong', 'error');
+                console.error('Error adding to wishlist:', error);
             }
         });
-    </script>
+    });
 
-    <%- include("../../views/partials/user/footer") %>
+    function addToCart(productId, quantity = 1) {
+        fetch(`/addToCart?productId=${productId}&quantity=${quantity}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else if (data.status === 400) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Oops!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: data.message || 'Something went wrong!',
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong!',
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentStatus = urlParams.get('paymentStatus');
+
+        if (paymentStatus === 'failed') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Failed',
+                text: 'The payment process failed. Please try again from your order list.',
+                timer: 3000,
+                showConfirmButton: false,
+                timerProgressBar: true,
+            }).then(() => {
+                window.history.replaceState(null, '', window.location.pathname);
+            });
+        }
+    });
+</script>
+
+<%- include("../../views/partials/user/footer") %>

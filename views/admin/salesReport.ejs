@@ -345,9 +345,78 @@
         }
 
         function exportToExcel() {
-            const table = document.getElementById('salesTable');
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Sales Report" });
-            XLSX.writeFile(wb, 'sales-report.xlsx');
+            
+            fetch('/admin/downloadSalesPDF')
+                .then(response => response.json())
+                .then(data => {
+                    const allOrders = data.orders;
+
+                   
+                    const tempTable = document.createElement('table');
+                    tempTable.id = 'fullSalesTable';
+                    tempTable.style.display = 'none';
+
+                    const thead = document.createElement('thead');
+                    thead.innerHTML = `
+                        <tr>
+                            <th>Sl No</th>
+                            <th>Order ID</th>
+                            <th>User Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Products</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                            <th>Total Price</th>
+                            <th>Discount</th>
+                            <th>Final Amount</th>
+                            <th>Coupon Code</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                        </tr>
+                    `;
+                    tempTable.appendChild(thead);
+
+                    
+                    const tbody = document.createElement('tbody');
+                    allOrders.forEach((order, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${order.orderId}</td>
+                            <td>${order.userName}</td>
+                            <td>${order.userEmail}</td>
+                            <td>${order.userPhone}</td>
+                            <td>${order.orderedItemsDetails.map(item => item.productName).join(', ')}</td>
+                            <td>${order.orderedItemsDetails.map(item => `x${item.quantity}`).join(', ')}</td>
+                            <td>${new Date(order.createdOn).toLocaleDateString()}</td>
+                            <td>Rs.${order.totalPrice.toLocaleString()}</td>
+                            <td>Rs.${order.discount.toLocaleString()}</td>
+                            <td>Rs.${order.finalAmount.toLocaleString()}</td>
+                            <td>${order.couponCode || 'N/A'}</td>
+                            <td>${order.paymentMethod}</td>
+                            <td>${order.status}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    tempTable.appendChild(tbody);
+
+                 
+                    document.body.appendChild(tempTable);
+
+                 
+                    const wb = XLSX.utils.table_to_book(tempTable, { sheet: "Sales Report" });
+
+                   
+                    XLSX.writeFile(wb, 'complete-sales-report.xlsx');
+
+                  
+                    document.body.removeChild(tempTable);
+                })
+                .catch(error => {
+                    console.error('Error fetching all orders:', error);
+                    alert('Failed to generate complete sales report');
+                });
         }
 
         function initializeDateFilter() {
@@ -358,7 +427,7 @@
             const rows = tbody.getElementsByTagName('tr');
             const dateRangeSelect = document.getElementById('dateRangeSelect');
 
-            // Global variables to store total values
+           
             let globalTotalSales = '₹<%= totalSales.toLocaleString() %>';
             let globalTotalOrders = '<%= count %>';
             let globalTotalDiscount = '₹<%= totalDiscount.toLocaleString() %>';
@@ -390,33 +459,33 @@
                 let totalDiscount = 0;
                 const uniqueCustomers = new Set();
 
-                // Loop through each row to filter by date and sum values
+               
                 for (const row of rows) {
                     const dateCell = row.cells[5].textContent.trim();
                     const rowDate = parseDate(dateCell);
 
-                    // Skip if no date or outside of range
+                  
                     if (!rowDate) continue;
 
                     let showRow = true;
                     if (startDate && rowDate < startDate) showRow = false;
                     if (endDate && rowDate > endDate) showRow = false;
 
-                    // Show or hide row based on date filter
+                    
                     row.style.display = showRow ? '' : 'none';
 
-                    // Aggregate only if the row is within the date range
+                    
                     if (showRow) {
                         visibleRows++;
 
-                        // Parse and accumulate final amount and discount values
+                        
                         const finalAmount = parseFloat(row.cells[9].textContent.replace(/Rs\.|[,]/g, '')) || 0;
                         const discount = parseFloat(row.cells[8].textContent.replace(/Rs\.|[,]/g, '')) || 0;
 
                         totalSales += finalAmount;
                         totalDiscount += discount;
 
-                        // Use a unique customer identifier for counting
+                        
                         const customerId = row.cells[1].getAttribute('data-customer-id');
                         if (customerId) uniqueCustomers.add(customerId);
                     }
@@ -438,25 +507,25 @@
 
                     switch (title) {
                         case 'Total Sales':
-                            // Use global total sales if no date filter, otherwise use filtered sales
+                           
                             valueSpan.textContent = formatCurrency(
                                 (startDate || endDate) ? totalSales : globalTotalSales
                             );
                             break;
                         case 'Total Orders':
-                            // Use global total orders if no date filter, otherwise use visible rows
+                            
                             valueSpan.textContent = (startDate || endDate) 
                                 ? visibleRows 
                                 : globalTotalOrders;
                             break;
                         case 'Total Discount':
-                            // Use global total discount if no date filter, otherwise use filtered discount
+                           
                             valueSpan.textContent = formatCurrency(
                                 (startDate || endDate) ? totalDiscount : globalTotalDiscount
                             );
                             break;
                         case 'Total Customers':
-                            // Use global total customers if no date filter, otherwise use unique customers
+                            
                             valueSpan.textContent = (startDate || endDate)
                                 ? uniqueCustomers.size
                                 : globalTotalCustomers;

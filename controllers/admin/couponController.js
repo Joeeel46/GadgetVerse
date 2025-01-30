@@ -69,21 +69,21 @@ const addCoupon = async (req, res) => {
         res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error adding coupon" });
     }
 };
-const deleteCoupon = async (req,res)=>{
+const deleteCoupon = async (req, res) => {
     try {
-        
-        const couponId= req.query.id;
-        const couponData = await Coupon.findByIdAndDelete({_id:couponId});
-        if(couponData){
-            return res.json({success:true,message: "Coupon remove successfully"})
-        }else{
-            return res.json({success:false,message: "some thing went wrong"})
+        const couponId = req.query.id;
+        const couponData = await Coupon.findByIdAndDelete(couponId);
+
+        if (couponData) {
+            return res.json({ success: true, message: "Coupon removed successfully" });
+        } else {
+            return res.json({ success: false, message: "Coupon not found or already deleted" });
         }
     } catch (error) {
-        
+        console.error("Delete Coupon Error:", error);
+        return res.status(500).json({ success: false, message: "Server error. Try again later." });
     }
-}
-
+};
 
 module.exports = {
     getCouponPage,

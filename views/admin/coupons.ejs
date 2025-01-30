@@ -77,7 +77,7 @@
                                     </thead>
                                     <tbody>
                                         <%for(let i=0;i<coupons.length;i++){%>
-                                            <tr>
+                                            <tr id="row-<%= coupons[i]._id %>">
                                                 <td>
                                                     <%=coupons[i].name%>
                                                 </td>
@@ -113,9 +113,7 @@
                             <nav aria-label="Page navigation example">
                                 <ul class="pagination justify-content-start">
                                     <!-- Page Numbers -->
-                                    <% let startPage=Math.max(1, currentPage - 2); let endPage=Math.min(totalPages,
-                                        startPage + 4); if (endPage - startPage < 4) { startPage=Math.max(1, endPage -
-                                        4); } if (startPage> 1) { %>
+                                    <% let startPage=Math.max(1, currentPage - 2); let endPage=Math.min(totalPages,startPage + 4); if (endPage - startPage < 4) { startPage=Math.max(1, endPage -4); } if (startPage> 1) { %>
                                         <li class="page-item">
                                             <a class="page-link" href="?page=1">1</a>
                                         </li>
@@ -141,8 +139,7 @@
                                                                     </li>
                                                                     <% } %>
                                                                         <li class="page-item">
-                                                                            <a class="page-link"
-                                                                                href="?page=<%= totalPages %>">
+                                                                            <a class="page-link" href="?page=<%= totalPages %>">
                                                                                 <%= totalPages %>
                                                                             </a>
                                                                         </li>
@@ -166,6 +163,11 @@
             e.preventDefault();
 
             // Collect form data
+
+            if (!validateCouponForm()) {
+                return;  // Stop execution if validation fails
+            }
+
             const couponData = {
                 couponCode: document.getElementById('couponCode').value,
                 discountPercentage: document.getElementById('discountPercentage').value,
@@ -174,7 +176,7 @@
                 expireOn: document.getElementById('endDate').value,
                 maxDiscount: document.getElementById('maxdiscount').value
             };
-           
+
             if (couponData.discountPercentage > 99 || couponData.discountPercentage < 1) {
                 Swal.fire({
                     icon: "warning",
@@ -232,10 +234,13 @@
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Yes, delete it!'
-            }).then(async (result) => { // Add async here because we use await inside
+            }).then(async (result) => { 
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`/admin/delete-coupon?id=${couponId}`);
+                        const response = await fetch(`/admin/delete-coupon?id=${couponId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
 
                         const result = await response.json();
 
@@ -243,15 +248,14 @@
                             // SweetAlert for success
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Success!',
+                                title: 'Deleted!',
                                 text: result.message,
                                 confirmButtonText: 'OK',
-                            }).then(() => {
-                                // Optional: Reload the page or perform another action
-                                window.location.reload()
                             });
+
+                            // Remove the deleted row from the table
+                            document.getElementById(`row-${couponId}`).remove();
                         } else {
-                            // SweetAlert for error
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error!',
@@ -261,7 +265,6 @@
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        // SweetAlert for unexpected error
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
@@ -292,8 +295,16 @@
             document.getElementById("endDateError").style.display = "none";
 
             if (!couponCode.value.trim()) {
-                document.getElementById("codeError").style.display = "block";
+                codeError.textContent = "Coupon code is required";
+                codeError.style.display = "block";
                 isValid = false;
+                
+            } else if (couponCode.value.trim().length < 4) {
+                codeError.textContent = "Coupon code must be at least 4 characters long";
+                codeError.style.display = "block";
+                isValid = false;
+            } else {
+                codeError.style.display = "none"; // Hide error if valid
             }
 
 

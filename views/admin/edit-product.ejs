@@ -323,14 +323,12 @@
 
             // Form field validations
             const name = document.getElementsByName('productName')[0].value;
-            const description = document.getElementById('descriptionid').value;
+            const description = document.getElementsByName('descriptionData')[0].value;
             const brand = document.getElementsByName('brand')[0].value;
             const price = document.getElementsByName('regularPrice')[0].value;
             const saleprice = document.getElementsByName('salePrice')[0].value;
             const color = document.getElementsByName('color')[0].value;
-            // const category = document.getElementsByName('category')[0].value;
-            const images = document.getElementById('input1');
-            const quantity = document.getElementsByName('quantity')[0].value; // Ensure the correct field is selected
+            const quantity = document.getElementsByName('quantity')[0].value;
             let isValid = true;
 
             // Validate each field
@@ -344,24 +342,27 @@
                 isValid = false;
             }
 
-            if (parseInt(quantity) < 0) {
+            // Quantity validation
+            if (!quantity || isNaN(quantity) || parseInt(quantity) < 0) {
                 displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
                 isValid = false;
             }
 
-            if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-                displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+            // Regular price validation
+            if (!price || !/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) <= 0) {
+                displayErrorMessage('regularPrice-error', 'Please enter a valid positive price.');
                 isValid = false;
             }
 
-            if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-                displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
-                isValid = false;
-            }
-
-            if (parseFloat(price) <= parseFloat(saleprice)) {
-                displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
-                isValid = false;
+            // Sale price validation (optional)
+            if (saleprice.trim() !== "") {
+                if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
+                    displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+                    isValid = false;
+                } else if (parseFloat(saleprice) > parseFloat(price)) {
+                    displayErrorMessage('salePrice-error', 'Sale price must be less than regular price or equal.');
+                    isValid = false;
+                }
             }
 
             if (color.trim() === "") {
@@ -369,9 +370,27 @@
                 isValid = false;
             }
 
-            if (images.files.length === 0) {
-                displayErrorMessage("images-error", 'Please select an image.');
-                isValid = false;
+            // Image validation - check for existing or new images
+            const existingImages = document.querySelectorAll('[id^="imageDatas"]');
+            const hasExistingImages = existingImages.length > 0;
+            
+            if (!hasExistingImages) {
+                // Check all image inputs
+                const imageInputs = ['input1', 'input2', 'input3', 'input4'];
+                let hasNewImage = false;
+                
+                for (const inputId of imageInputs) {
+                    const input = document.getElementById(inputId);
+                    if (input && input.files && input.files.length > 0) {
+                        hasNewImage = true;
+                        break;
+                    }
+                }
+
+                if (!hasNewImage) {
+                    displayErrorMessage('images-error', 'Please select at least one image.');
+                    isValid = false;
+                }
             }
 
             // If all validations pass, show SweetAlert confirmation
@@ -383,33 +402,32 @@
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, publish it!',
+                    confirmButtonText: 'Yes, publish it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Submit the form if confirmed
-                        document.getElementById('formId').submit();
+                        // Submit the form using the actual form element
+                        document.querySelector('form').submit();
                     }
                 });
             }
 
-            // Prevent default submission until SweetAlert confirms
             return false;
         }
 
-
         function displayErrorMessage(elementId, message) {
-            var errorElement = document.getElementById(elementId);
-            errorElement.innerText = message;
-            errorElement.style.display = "block";
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.innerText = message;
+                errorElement.style.display = "block";
+            }
         }
 
         function clearErrorMessages() {
             const errorElements = document.getElementsByClassName('error-message');
             Array.from(errorElements).forEach(element => {
                 element.innerText = '';
+                element.style.display = "none";
             });
-            const errorMessage = document.getElementById('errorMessage');
-
         }
 
         function deleteSingleImage(imageId, productId) {
