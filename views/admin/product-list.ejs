@@ -108,7 +108,7 @@ function addOffer(productId) {
                         $(`#offer-${productId}`).text(response.newOffer + "%");
 
                         // Update Sale Price Column
-                        $(`#salePrice-${productId}`).text("₹" + response.newSalePrice);
+                        $(`#salePrice-${productId}`).text(response.newSalePrice);
 
                         // Change Button to Remove Offer
                         $(`#offer-button-${productId}`).html(`
@@ -147,7 +147,7 @@ function removeOffer(productId) {
                         $(`#offer-${productId}`).text("0%");
 
                         // Reset Sale Price Column
-                        $(`#salePrice-${productId}`).text("₹" + response.originalSalePrice);
+                        $(`#salePrice-${productId}`).text(response.originalSalePrice);
 
                         // Change Button to Add Offer
                         $(`#offer-button-${productId}`).html(`
