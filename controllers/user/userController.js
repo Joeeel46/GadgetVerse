@@ -103,20 +103,26 @@ const loadHomePage = async (req, res) => {
             endDate:{$gt:new Date(today)}
         })
         const user = req.session.user
-        const categories = await Category.find({isListed:true})
-        let productData = await Product.find(
-            {isBlocked:false,
-                category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}
-            }
-        )
+        const categories = await Category.find({ isListed: true });
+        const categoryIds = categories.map(category => category._id);
+
+        const brands = await Brand.find({ isBlocked: false });
+        const brandNames = brands.map(brand => brand.brandName);
+
+        let productData = await Product.find({
+            isBlocked: false,
+            category: { $in: categoryIds },
+            brand: { $in: brandNames },
+            quantity: { $gt: 0 }
+        })
         .populate('category')
-        .sort({ createdAt: -1 }) // Sort by `createdAt` in descending order (most recent first)
+        .sort({ createdAt: -1 }) 
         .limit(4);
 
         if(user){
             
             const userData = await User.findById({_id:user})
-            // console.log(userData)
+            
             res.render("home",{user:userData ,products:productData,banner:findBanner || []})
 
         }else{
@@ -257,12 +263,13 @@ const loadShoppingPage = async (req, res) => {
         const { sortBy, category } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = 15;
-        const skip = (page - 1) * limit;  // Moved skip calculation here
+        const skip = (page - 1) * limit;  
 
-        // Prepare condition for filtering
-        const condition = category ? { category, isBlocked: false } : { isBlocked: false };
+        const brands = await Brand.find({ isBlocked: false });
+        const brandNames = brands.map(brand => brand.brandName);
 
-        // Determine sort criteria based on sortBy parameter
+        const condition = category ? { category, isBlocked: false , brand: { $in: brandNames } } : { isBlocked: false , brand: { $in: brandNames } };
+
         let sortCriteria;
         switch (sortBy) {
             case 'mostPopular':
