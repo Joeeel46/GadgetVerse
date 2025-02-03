@@ -565,6 +565,13 @@
                 return false;
             }
 
+            const button = document.getElementById("placeOrderButton");
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.disabled = false;
+            }, 5000);
+
             if (paymentOption === "online") { 
                 startRazorpayPayment();
                 return false;
@@ -576,8 +583,7 @@
         }
 
         async function handleNonRazorpayPayment(paymentOption) {
-            const button = document.getElementById("placeOrderButton");
-            button.disabled = true;
+            
         try {
             const finalAmount = Number(document.getElementById('final').innerText.replace('₹', '').replace(',', ''));
             const totalPrice = document.getElementById('SubTotal').innerText.replace('₹', '').replace(',', '');
