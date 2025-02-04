@@ -102,18 +102,52 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function updateStock(productId) {
-        const newStock = document.getElementById(`stock-${productId}`).value;
+        const stockInput = document.getElementById(`stock-${productId}`);
+        const newStock = stockInput.value.trim();
+
+        if (newStock === '' || isNaN(newStock)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Input',
+                text: 'Please enter a valid number.',
+                toast: true,
+                position: "top-end",
+                timer: 2000,
+                timerProgressBar: true,
+            });
+            
+            return;
+        }
+
+        const stockValue = parseInt(newStock);
+
+        if (stockValue < 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Stock',
+                text: 'Stock cannot be negative.',
+                toast: true,
+                position: "top-end",
+                timer: 2000,
+                timerProgressBar: true,
+            });
+            stockInput.value = 0;
+            return;
+        }
 
         fetch(`/admin/updateStock`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ productId, newStock })
+            body: JSON.stringify({ productId, newStock: stockValue })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                const stockBadge = document.querySelector(`tr:has(#stock-${productId}) .badge`);
+                stockBadge.textContent = stockValue;
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Stock Updated',
@@ -122,8 +156,6 @@
                     position: "top-end",
                     timer: 2000,
                     timerProgressBar: true,
-                }).then(() => {
-                    location.reload();
                 });
             } else {
                 Swal.fire({

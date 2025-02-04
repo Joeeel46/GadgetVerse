@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
+const Brand = require("../../models/brandSchema");
 const Category = require("../../models/categorySchema");
 const Cart = require("../../models/cartSchema");
 const Wallet = require("../../models/walletSchema");
@@ -11,22 +12,42 @@ const Order = require("../../models/orderSchema");
 const Coupon = require("../../models/couponSchema");
 const { log } = require('npmlog');
 const { message } = require('statuses');
+const status = require('statuses');
 
 
 const getCart = async (req, res) => {
     try {
         const userId = req.session.user;
 
-        const user = await User.findById(userId)
+        const user = await User.findById(userId);
         let cart = await Cart.findOne({ userId: userId }).populate('items.productId')
-
+        .populate({
+            path: 'items.productId',
+            populate: {
+                path: 'category'
+            }
+        });
 
         if (!cart) {
-            return res.render('cart', { products: [], totalAmount: 0, user })
+            return res.render('cart', { products: [], totalAmount: 0, user });
         }
 
-        const totalAmount = cart.items.reduce((sum, item) => sum + item.totalPrice, 0)
-        res.render('cart', { products: cart.items, totalAmount, user })
+        const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+
+        const blockedBrandNames = new Set(blockedBrands.map(brand => brand.brandName));
+        
+        cart.items = cart.items.filter(item => 
+            item.productId &&
+            !item.productId.isBlocked &&  
+            item.productId.category.isListed &&
+            !blockedBrandNames.has(item.productId.brand)  
+        );
+
+        await cart.save();
+
+        const totalAmount = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+        res.render('cart', { products: cart.items, totalAmount, user });
 
     } catch (error) {
         console.error("Error on getting cart")
@@ -38,20 +59,53 @@ const addToCart = async (req, res) => {
         if (req.session.user) {
             const userId = req.session.user;
             const { productId } = req.query;
+            const product = await Product.findById(productId).populate("category");
+            if (!product) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Product not found! Kindly refresh the Page"
+                });
+            }
+
+            if (product.isBlocked) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Product is Blocked! Kindly refresh the Page"
+                });
+            }
+
+            if (!product.category || !product.category.isListed) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Category is Unlisted! Kindly refresh the Page"
+                });
+            }
+
+            const brand = await Brand.findOne({ brandName: product.brand });
+            if (!brand || brand.isBlocked) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Brand blocked! Kindly refresh the Page"
+                });
+            }
+            
             const quantity = req.query.quantity;
             const quantityNumber = parseInt(quantity, 10) || 1;
     
             console.log(userId);
     
-            // Check if the cart exists
             let cart = await Cart.findOne({ userId: userId });
     
             if (cart) {
-                // If cart exists, check if the product already exists in the cart
+             
                 const productExists = cart.items.find(item => item.productId.toString() === productId.toString());
     
                 if (productExists) {
-                    // If the product already exists in the cart, check stock
+                  
                     const product = await Product.findById(productId);
                     const totalQuantity = quantityNumber + productExists.quantity;
                     if(totalQuantity > 5){
@@ -188,15 +242,44 @@ const checkOut = async (req, res) => {
             return res.render('checkout', { carts: null, product, addresses: addresses.address, totalPrice, user, qty, walletAmount })
 
         } else {
-            const cartItems = await Cart.findOne({ userId }).populate('items.productId')
+            const cartItems = await Cart.findOne({ userId }).populate({
+                path: 'items.productId',
+                populate: {
+                    path: 'category',
+                    model: 'Category'
+                }
+            });
+            
             if (!cartItems || cartItems.items.length === 0) {
-                return res.redirect('/cart')
+                return res.redirect('/cart');
             }
-            const activeItems = cartItems.items.filter(item => item.productId && !item.productId.isBlocked && item.productId.quantity >= item.quantity)
-
-            totalPrice = activeItems.reduce((sum, item) => sum + item.totalPrice, 0)
-            // console.log(totalPrice)
-            return res.render('checkout', { carts: cartItems, addresses: addresses.address, totalPrice, product: null, user, walletAmount })
+            
+            const blockedBrands = await Brand.find({ isBlocked: true }).select('brandName');
+            const blockedBrandNames = blockedBrands.map(brand => brand.brandName);
+            
+            const activeItems = cartItems.items.filter(item => 
+                item.productId && 
+                !item.productId.isBlocked && 
+                !blockedBrandNames.includes(item.productId.brand) && 
+                item.productId.category?.isListed && 
+                item.productId.quantity >= item.quantity
+            );
+            
+            cartItems.items = cartItems.items.filter(item => 
+                activeItems.includes(item)
+            );
+            await cartItems.save();
+            
+            const totalPrice = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+            
+            return res.render('checkout', { 
+                carts: cartItems, 
+                addresses: addresses.address, 
+                totalPrice, 
+                product: null, 
+                user, 
+                walletAmount 
+            });
         }
 
 
@@ -282,7 +365,7 @@ const saveOrder = async (req, res) => {
             const productId = JSON.parse(singleProduct);
             console.log('singleproductparsed',productId)
             
-            const productExists = await Product.findById(productId);
+            const productExists = await Product.findById(productId).populate('category');
 
             if (!productExists) {
                 return res.status(400).json({ status:400,success: false, message: "Product not found" });
@@ -290,6 +373,23 @@ const saveOrder = async (req, res) => {
 
             if (productExists.isBlocked) {
                 return res.status(400).json({ status:400,success: false, message: "Product is currently unavailable" });
+            }
+
+            if (!productExists.category || !productExists.category.isListed) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Product is currently unavailable"
+                });
+            }
+
+            const brand = await Brand.findOne({ brandName: productExists.brand });
+            if (!brand || brand.isBlocked) {
+                return res.status(400).json({
+                    status: 400,
+                    success: false,
+                    message: "Product is currently unavailable"
+                });
             }
             
             if (productExists.quantity < singleProductQuantity) {
@@ -318,7 +418,7 @@ const saveOrder = async (req, res) => {
 
             // Validate all cart items first
             for (let item of cartItems) {
-                const productExists = await Product.findById(item.productId);
+                const productExists = await Product.findById(item.productId).populate("category");
 
                 if (!productExists) {
                     return res.status(400).json({
@@ -328,9 +428,26 @@ const saveOrder = async (req, res) => {
                     });
                 }
 
+                if (!productExists.category || !productExists.category.isListed) {
+                    return res.status(400).json({
+                        status: 400,
+                        success: false,
+                        message: `Product ${productExists.productName} is currently unavailable`
+                    });
+                }
+
                 if (productExists.isBlocked) {
                     return res.status(400).json({
                         status:400,
+                        success: false,
+                        message: `Product ${productExists.productName} is currently unavailable`
+                    });
+                }
+
+                const brand = await Brand.findOne({ brandName: productExists.brand });
+                if (!brand || brand.isBlocked) {
+                    return res.status(400).json({
+                        status: 400,
                         success: false,
                         message: `Product ${productExists.productName} is currently unavailable`
                     });

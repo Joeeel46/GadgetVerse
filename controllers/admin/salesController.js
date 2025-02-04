@@ -42,7 +42,7 @@ const showSaleReport = async (req, res) => {
         const totalPages = Math.ceil(count / limit);
 
         // Render the page with all necessary data
-        res.render("salesReport", {
+        res.render("sales-report", {
             orders: orderData,
             activePage: "sales-report",
             count,
@@ -107,7 +107,3 @@ module.exports={
     showSaleReport,
     saleReportPDF
 }
-
-
-
-

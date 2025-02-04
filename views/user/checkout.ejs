@@ -116,8 +116,9 @@
         <div class="page-header breadcrumb-wrap">
             <div class="container">
                 <div class="breadcrumb">
-                    <a href="/" rel="nofollow">Home</a>
-                    <a href="/cart" rel="nofollow">Cart</a>
+                    <a href="/" >Home </a>
+                    <span></span>
+                    <a href="/cart"> Cart</a>
                     <span></span> Checkout
                 </div>
             </div>
@@ -693,22 +694,19 @@
 
                 const orderData = await orderResponse.json();
                 const orderId = orderData.orderId;
-
-                if(orderData.status === 404){
-                    return Swal.fire({
-                        icon: 'warning',
-                        title: orderData.message
-                        
-                    })
-                }
                 
                 if(orderData.status === 400){
                     return Swal.fire({
                         icon: 'warning',
-                        title: orderData.message
-                        
+                        title: orderData.message,
+                        timer: 4000, 
+                        showConfirmButton: false, 
+                        timerProgressBar: true, 
+                        willClose: () => {
+                            window.location.href = '/shop';
+                        }
                     })
-                    .then(()=>window.location.href='/shop')
+                    // .then(()=>window.location.href='/shop')
                 }
                 if (!orderData.success) {
                     Swal.fire({

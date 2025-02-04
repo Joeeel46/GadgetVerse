@@ -243,18 +243,86 @@ document.getElementById('categoryForm').addEventListener('submit', function (e) 
 
 async function addOffer(categoryId) {
     const { value: amount } = await Swal.fire({
-        title: "Offer in percentage",
-        inputLabel: "Percentage",
-        input: 'number',
-        inputPlaceholder: "%",
+        title: "Enter Offer Percentage",
+        input: "text",
         inputAttributes: {
-            min: 1,
-            max: 99
+            maxlength: "2",
+            pattern: "[0-9]{1,2}",
+            style: "width: 60px; text-align: center; display: block; margin: 0 auto;"
         },
-        validationMessage: 'Please enter a value between 1 and 99'
+        inputValidator: (value) => {
+            // Check if input is empty
+            if (!value && value !== "0") {
+                return "Please enter an offer percentage";
+            }
+            
+            // Remove leading zeros and convert to number
+            const cleanValue = value.replace(/^0+/, '');
+            const offerValue = Number(cleanValue);
+            
+            // Check if it's zero or double zero
+            if (offerValue === 0) {
+                return "Offer percentage cannot be 0";
+            }
+            
+            // Check if it's a valid number
+            if (isNaN(offerValue)) {
+                return "Please enter numbers only";
+            }
+            
+            // Check range
+            if (offerValue < 0 || offerValue >= 100) {
+                return "Offer percentage must be between 1 and 99";
+            }
+            
+            // Check if it's a whole number
+            if (!Number.isInteger(offerValue)) {
+                return "Please enter a whole number";
+            }
+        },
+        showCancelButton: true,
+        confirmButtonText: "Apply Offer",
+        allowOutsideClick: false,
+        inputValue: "",
+        preConfirm: (value) => {
+            // Remove leading zeros
+            const cleanValue = value.replace(/^0+/, '');
+            
+            // Check if it's empty after removing zeros
+            if (!cleanValue) {
+                Swal.showValidationMessage('Offer percentage cannot be 0');
+                return false;
+            }
+            
+            // Additional check to ensure only numbers are entered
+            if (!/^\d{1,2}$/.test(cleanValue)) {
+                Swal.showValidationMessage('Please enter a valid 1-2 digit number');
+                return false;
+            }
+            return cleanValue; // Return cleaned value without leading zeros
+        }
     });
 
-    if (!amount || amount > 99 || amount < 1) {
+    // Add event listener to restrict input to numbers only
+    const input = document.querySelector('.swal2-input');
+    input.addEventListener('keypress', (e) => {
+        // Allow only numbers
+        if (!/^\d$/.test(e.key)) {
+            e.preventDefault();
+        }
+        // Prevent input if length is already 2 digits
+        if (input.value.length >= 2) {
+            e.preventDefault();
+        }
+    });
+
+    if (!amount) return; // User cancelled or closed the dialog
+
+    // Remove any leading zeros and validate the cleaned amount
+    const cleanAmount = amount.replace(/^0+/, '');
+    const numericAmount = Number(cleanAmount);
+
+    if (!cleanAmount || numericAmount > 99 || numericAmount < 1) {
         Swal.fire({
             icon: "warning",
             text: "Please enter a valid percentage between 1% and 99%"
@@ -269,7 +337,7 @@ async function addOffer(categoryId) {
                 'Content-Type': "application/json"
             },
             body: JSON.stringify({
-                percentage: amount,
+                percentage: numericAmount, // Send the cleaned numeric value
                 categoryId: categoryId
             })
         });
@@ -280,11 +348,13 @@ async function addOffer(categoryId) {
             Swal.fire({
                 icon: "success",
                 title: "Success",
-                text: data.message
+                text: data.message,
+                timer: 2000,
+                showConfirmButton: false
             }).then(() => {
                 // Update UI
                 const categoryRow = document.querySelector(`#category-${categoryId}`);
-                categoryRow.querySelector('.offer-percentage').textContent = `${amount}%`;
+                categoryRow.querySelector('.offer-percentage').textContent = `${numericAmount}%`;
                 const button = categoryRow.querySelector('.offer-button');
                 button.textContent = 'Remove';
                 button.setAttribute('onclick', `removeOffer('${categoryId}')`);
